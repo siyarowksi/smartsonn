@@ -12,6 +12,13 @@ import aiohttp
 import os
 import traceback
 
+import requests
+
+try:
+    r = requests.get("https://api.binance.com/api/v3/exchangeInfo", timeout=10)
+    print("Bağlantı başarılı! Status kodu:", r.status_code)
+except Exception as e:
+    print("İnternete çıkılamıyor. Hata:", e)
 # Windows için olay döngüsü politikasını ayarla
 if platform.system() == "Windows":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
