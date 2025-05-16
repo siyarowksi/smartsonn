@@ -66,6 +66,29 @@ async def test_binance_connection():
         traceback.print_exc()
         return False
 
+TICKERS_CACHE = None
+TICKERS_CACHE_TIME = None
+TICKERS_CACHE_DURATION = 120  # saniye
+
+async def get_top_50_binance_pairs():
+    global TICKERS_CACHE, TICKERS_CACHE_TIME
+    now = datetime.now()
+    if TICKERS_CACHE is None or TICKERS_CACHE_TIME is None or (now - TICKERS_CACHE_TIME).total_seconds() > TICKERS_CACHE_DURATION:
+        try:
+            TICKERS_CACHE = await BINANCE.fetch_tickers()
+            TICKERS_CACHE_TIME = now
+        except Exception as e:
+            print(f'Binance top 50 çekilemedi: {e}')
+            return []
+    usdt_tickers = {symbol: data for symbol, data in TICKERS_CACHE.items() if symbol.endswith('/USDT')}
+    sorted_pairs = sorted(
+        usdt_tickers.items(),
+        key=lambda x: x[1].get('quoteVolume', 0),
+        reverse=True
+    )
+    top50_pairs = [symbol for symbol, _ in sorted_pairs[:50]]
+    return top50_pairs
+
 # Veritabanını başlat
 def init_db():
     conn = sqlite3.connect(DB_FILE)
@@ -388,25 +411,7 @@ def generate_signal(df, symbol, timeframe):
         take_profit = latest_price - (4 * latest_atr)
         rr = (latest_price - take_profit) / (stop_loss - latest_price) if stop_loss != latest_price else 0
     else:
-        signal_type = random.choice(['Uzun', 'Kısa'])
-        signal_emoji = '🟢' if signal_type == 'Uzun' else '🔴'
-        if signal_type == 'Uzun':
-            stop_loss = latest_price - (2 * latest_atr)
-            take_profit = latest_price + (4 * latest_atr)
-            rr = (take_profit - latest_price) / (latest_price - stop_loss) if latest_price != stop_loss else 0
-        else:
-            stop_loss = latest_price + (2 * latest_atr)
-            take_profit = latest_price - (4 * latest_atr)
-            rr = (latest_price - take_profit) / (stop_loss - latest_price) if stop_loss != latest_price else 0
-        return (
-            f'ℹ️ {symbol} için sinyal bulunamadı. Yeni sinyal için lütfen biraz bekleyin.\n'
-            f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
-            f'🕒 Zaman Dilimi: {timeframe}\n'
-            f'💵 Fiyat: {latest_price:.5f} USDT\n'
-            f'🎯 Kâr Al: {take_profit:.5f} USDT\n'
-            f'🛡️ Zarar Durdur: {stop_loss:.5f} USDT\n'
-            f'📊 Risk-Ödül Oranı: {rr:.2f}'
-        )
+        return f'ℹ️ {symbol} için sinyal bulunamadı. Yeni sinyal için lütfen biraz bekleyin veya /sinyal coin adını yazıp tekrar deneyin'
 
     message = (
         f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
@@ -456,7 +461,7 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     args = context.args
     coin = None
-    timeframe = random.choice(VALID_TIMEFRAMES)  # Varsayılan: rastgele zaman dilimi
+    timeframe = random.choice(VALID_TIMEFRAMES)
 
     if args:
         if len(args) == 1:
@@ -472,41 +477,46 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text('❌ Geçersiz zaman dilimi! (1, 2, 4, 6 kullanın)')
                 return
 
-    usdt_pairs = await get_usdt_pairs()
-    if not usdt_pairs:
-        await update.message.reply_text('❌ USDT çiftleri alınamadı!')
-        return
-
-    if coin:
-        symbol = f'{coin}/USDT'
-        if symbol not in usdt_pairs:
-            await update.message.reply_text(f'❌ {coin}/USDT Binance’ta bulunamadı!')
+        usdt_pairs = await get_usdt_pairs()
+        if not usdt_pairs:
+            await update.message.reply_text('❌ USDT çiftleri alınamadı!')
             return
+
+        if coin:
+            symbol = f'{coin}/USDT'
+            if symbol not in usdt_pairs:
+                await update.message.reply_text(f'❌ {coin}/USDT Binance’ta bulunamadı!')
+                return
+        else:
+            symbol = random.choice(usdt_pairs)
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                df = await get_price_data(symbol, timeframe)
+                message = generate_signal(df, symbol, timeframe)
+                await update.message.reply_text(message)
+                return
+            except Exception as e:
+                await update.message.reply_text(f'❌ Hata: {symbol} için sinyal üretilemedi. {str(e)}')
+                return
     else:
-        symbol = random.choice(usdt_pairs)
-
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            df = await get_price_data(symbol, timeframe)
-            message = generate_signal(df, symbol, timeframe)
-            await update.message.reply_text(message)
+        # Hiç parametre yoksa Binance top 50 hacimli coinlerden rastgele seç
+        top50_pairs = await get_top_50_binance_pairs()
+        if not top50_pairs:
+            await update.message.reply_text('❌ Binance top 50 coinler alınamadı!')
             return
-        except ccxt_async.RateLimitExceeded:
-            if attempt < max_retries - 1:
-                print(f'Rate limit hatası, {10 * (attempt + 1)} saniye bekleniyor...')
-                await asyncio.sleep(10 * (attempt + 1))
-                continue
-            await update.message.reply_text('❌ Binance API limitine ulaşıldı. Lütfen daha sonra tekrar deneyin.')
-            return
-        except ccxt_async.NetworkError:
-            await update.message.reply_text('❌ Ağ hatası. İnternet bağlantınızı kontrol edin.')
-            return
-        except Exception as e:
-            print(f'Sinyal hatası: {e}')
-            traceback.print_exc()
-            await update.message.reply_text(f'❌ Hata: {symbol} için sinyal üretilemedi. {str(e)}')
-            return
+        symbol = random.choice(top50_pairs)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                df = await get_price_data(symbol, timeframe)
+                message = generate_signal(df, symbol, timeframe)
+                await update.message.reply_text(message)
+                return
+            except Exception as e:
+                await update.message.reply_text(f'❌ Hata: {symbol} için sinyal üretilemedi. {str(e)}')
+                return
 
 # Favori coin işlemleri için veritabanı fonksiyonları
 def get_favorites(user_id):
@@ -600,7 +610,7 @@ async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         '- Gelişmiş /help ve /bilgi menüleri\n'
         '- (Yakında) Sinyal geçmişi, premium sistem, alarm, admin paneli ve daha fazlası!\n\n'
         '*Kullanım için örnekler:*\n'
-        '- /start yetkiliadmin\n'
+        '- /start id adresiniz\n'
         '- /sinyal BTC 1\n'
         '- /favori ekle BTC\n'
         '- /top30\n'
