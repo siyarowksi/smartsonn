@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import aiohttp
 import os
 import traceback
-
 import requests
 
 try:
@@ -19,6 +18,7 @@ try:
     print("Bağlantı başarılı! Status kodu:", r.status_code)
 except Exception as e:
     print("İnternete çıkılamıyor. Hata:", e)
+
 # Windows için olay döngüsü politikasını ayarla
 if platform.system() == "Windows":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -35,7 +35,7 @@ BINANCE = ccxt_async.binance({
     #     'https': os.getenv('PROXY_HTTPS', 'https://your_proxy:port'),
     # }
 })
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAH0yjQc1dfNavW5QZ_vo_aZ3dimytZFHQE')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAEzKfKf83Lp5fdae2_PTkAw9Qo3_0bNRfw')
 CMC_API_KEY = os.getenv('CMC_API_KEY', '')  # CoinMarketCap API anahtarı (opsiyonel)
 
 # Veritabanı ayarları
@@ -597,6 +597,49 @@ async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text('⭐ Henüz favori coin eklemediniz.')
 
+# Yeni eklenen komutlar: Tüm kullanıcıları ve belirli kullanıcıyı çıkış yaptırma
+# Tüm kullanıcıları çıkış yaptır
+async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+    user = check_chat_id(chat_id)
+    if not user or user[0] != 'yetkiliadmin':
+        await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
+        return
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('UPDATE users SET chat_id = NULL')
+    conn.commit()
+    conn.close()
+    await update.message.reply_text('✅ Tüm kullanıcılar çıkış yaptı.')
+    print(f'Tüm kullanıcılar çıkış yaptı: {chat_id}')
+
+# Belirli kullanıcıyı çıkış yaptır
+async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+    user = check_chat_id(chat_id)
+    if not user or user[0]!= 'yetkiliadmin':
+        await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
+        return
+
+    args = context.args
+    if not args:
+        await update.message.reply_text('Kullanım: /kullanicicikis <user_id>')
+        return
+
+    target_user_id = args[0]
+    if not check_user(target_user_id):
+        await update.message.reply_text(f'❌ Kullanıcı ID {target_user_id} bulunamadı!')
+        return
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('UPDATE users SET chat_id = NULL WHERE user_id = ?', (target_user_id,))
+    conn.commit()
+    conn.close()
+    await update.message.reply_text(f'✅ {target_user_id} kullanıcısı çıkış yaptı.')
+    print(f'Kullanıcı çıkış yaptı: {target_user_id}, {chat_id}')
+
 # Bilgi ve yardım komutları
 async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bilgi_text = (
@@ -676,6 +719,9 @@ def main():
         app.add_handler(CommandHandler('favorilerim', favorilerim))
         app.add_handler(CommandHandler('bilgi', bilgi))
         app.add_handler(CommandHandler('help', help_command))
+        # Yeni eklenen komut handler'ları
+        app.add_handler(CommandHandler('tumcikis', tum_cikis))
+        app.add_handler(CommandHandler('kullanicicikis', kullanici_cikis))
         print('Bot başlatılıyor...')
         loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
     except KeyboardInterrupt:
