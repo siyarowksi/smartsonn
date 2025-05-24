@@ -647,18 +647,14 @@ async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'SmartKoinBot, Binance spot piyasasındaki USDT pariteleri için teknik analiz tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
         '*Özellikler:*\n'
         '- Gerçek zamanlı teknik analiz (RSI, MACD, Bollinger, EMA, vb.)\n'
-        '- Favori coin ekleme/çıkarma ve sadece favorilerden sinyal alma\n'
-        '- CoinMarketCap Top 30 listesi\n'
         '- Kullanıcıya özel yetkilendirme ve güvenlik\n'
         '- Gelişmiş /help ve /bilgi menüleri\n'
         '- (Yakında) Sinyal geçmişi, premium sistem, alarm, admin paneli ve daha fazlası!\n\n'
         '*Kullanım için örnekler:*\n'
         '- /start id adresiniz\n'
         '- /sinyal BTC 1\n'
-        '- /favori ekle BTC\n'
-        '- /top30\n'
-        'Her türlü soru ve destek için: @senin_telegram_kullanıcı_adın\n'
-        'Botun sahibi: [Senin Adın veya Markan]\n'
+        '- /sinyal\n'
+        'Her türlü soru ve destek için: @finetictradee veya finetictrade@gmail.com\n'
         'Gizlilik: Kullanıcı verileriniz üçüncü kişilerle paylaşılmaz.\n'
     )
     await update.message.reply_text(bilgi_text, parse_mode='HTML')
@@ -666,15 +662,9 @@ async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = (
         '🤖 *Komutlar ve Açıklamaları:*\n\n'
-        '/start id - Yetki alır ve giriş yaparsın. (Örnek: /start kullanıcı adınız)\n'
-        '/sinyal [COIN] [1|2|4|6] - Sinyal alırsın. (Örnek: /sinyal BTC 1)\n'
-        '/top30 - CoinMarketCap’ten en iyi 30 coini listeler.\n'
-        '/exit - Çıkış yapar ve hesabını devre dışı bırakır.\n'
+        '/sinyal [COIN] [1|2|4|6] - Rasgele veya Saatlik sinyal alırsın. (Örnek: /sinyal BTC 1 veya /sinyal)\n'
         '/help - Bu yardım menüsünü gösterir.\n'
         '/bilgi - Botun detaylı açıklaması ve kullanım rehberi.\n'
-        '/favori ekle COIN - Favori coin ekler. (Örnek: /favori ekle BTC)\n'
-        '/favori sil COIN - Favori coin siler. (Örnek: /favori sil ETH)\n'
-        '/favorilerim - Tüm favori coinlerini listeler.\n'
     )
     await update.message.reply_text(help_text, parse_mode='HTML')
 
