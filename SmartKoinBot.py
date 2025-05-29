@@ -25,30 +25,25 @@ if platform.system() == "Windows":
 
 # Binance ve Telegram ayarları
 BINANCE = ccxt_async.binance({
-    'apiKey': os.getenv('ba2AjFONSLAVd2c95WCgZZL23xOs6MYiWHW8r4E0d2AcLynQUDeBWVkULxDSkB3X'),  # Binance API anahtarı
-    'secret': os.getenv('i8FYOJQ1fMoHP7Sbsf3VbuyjPRwrKoHaprXxl7n53ZalvvsV0M8C9Mp8bfTgiTov'),  # Binance gizli anahtarı
-    'enableRateLimit': True,  # Rate limit yönetimini etkinleştir
-    'rateLimit': 1000,  # Milisaniye cinsinden istekler arası bekleme süresi
-    # Proxy gerekiyorsa şu satırları aktif edin:
-    # 'proxies': {
-    #     'http': os.getenv('PROXY_HTTP', 'http://your_proxy:port'),
-    #     'https': os.getenv('PROXY_HTTPS', 'https://your_proxy:port'),
-    # }
+    'apiKey': os.getenv('ba2AjFONSLAVd2c95WCgZZL23xOs6MYiWHW8r4E0d2AcLynQUDeBWVkULxDSkB3X'),
+    'secret': os.getenv('i8FYOJQ1fMoHP7Sbsf3VbuyjPRwrKoHaprXxl7n53ZalvvsV0M8C9Mp8bfTgiTov'),
+    'enableRateLimit': True,
+    'rateLimit': 1000,
 })
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAEzKfKf83Lp5fdae2_PTkAw9Qo3_0bNRfw')
-CMC_API_KEY = os.getenv('CMC_API_KEY', '')  # CoinMarketCap API anahtarı (opsiyonel)
 
-# Veritabanı ayarları
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAEzKfKf83Lp5fdae2_PTkAw9Qo3_0bNRfw')
+CMC_API_KEY = os.getenv('CMC_API_KEY', '')
 DB_FILE = 'users.db'
 
 # Önbellek için global değişkenler
 MARKETS_CACHE = None
 MARKETS_CACHE_TIME = None
-DATA_CACHE = {}  # {symbol_timeframe: (df, timestamp)}
-CACHE_DURATION = 3600  # 1 saat
-
-# Geçerli zaman dilimleri
+DATA_CACHE = {}
+CACHE_DURATION = 3600
 VALID_TIMEFRAMES = ['1h', '2h', '4h', '6h']
+TICKERS_CACHE = None
+TICKERS_CACHE_TIME = None
+TICKERS_CACHE_DURATION = 120
 
 # Binance API bağlantısını test et
 async def test_binance_connection():
@@ -65,10 +60,6 @@ async def test_binance_connection():
         print(f'Bağlantı hatası: {e}')
         traceback.print_exc()
         return False
-
-TICKERS_CACHE = None
-TICKERS_CACHE_TIME = None
-TICKERS_CACHE_DURATION = 120  # saniye
 
 async def get_top_50_binance_pairs():
     global TICKERS_CACHE, TICKERS_CACHE_TIME
@@ -141,7 +132,16 @@ def exit_user(chat_id):
     conn.commit()
     conn.close()
 
-# Tüm USDT çiftlerini çek (önbellekleme ile)
+# Tüm yetkili kullanıcıları al
+def get_authorized_users():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT chat_id FROM users WHERE chat_id IS NOT NULL')
+    results = c.fetchall()
+    conn.close()
+    return [row[0] for row in results]
+
+# Tüm USDT çiftlerini çek
 async def get_usdt_pairs():
     global MARKETS_CACHE, MARKETS_CACHE_TIME
     max_retries = 3
@@ -168,7 +168,7 @@ async def get_usdt_pairs():
             traceback.print_exc()
             return []
 
-# Fiyat verisi çekme (önbellekleme ile)
+# Fiyat verisi çekme
 async def get_price_data(symbol, timeframe='1h', limit=100):
     cache_key = f'{symbol}_{timeframe}'
     try:
@@ -423,6 +423,52 @@ def generate_signal(df, symbol, timeframe):
     )
     return message
 
+# Periyodik sinyal gönderme
+async def send_periodic_signals(app: Application):
+    while True:
+        try:
+            # Yetkili kullanıcıları al
+            authorized_users = get_authorized_users()
+            if not authorized_users:
+                print("Hiçbir yetkili kullanıcı bulunamadı.")
+                await asyncio.sleep(7200)  # 2 saat
+                continue
+
+            # Rastgele bir coin ve zaman dilimi seç
+            top50_pairs = await get_top_50_binance_pairs()
+            if not top50_pairs:
+                print("Top 50 coin alınamadı.")
+                await asyncio.sleep(7200)  # 2 saat
+                continue
+
+            symbol = random.choice(top50_pairs)
+            timeframe = random.choice(VALID_TIMEFRAMES)
+
+            # Sinyal üret
+            df = await get_price_data(symbol, timeframe)
+            message = generate_signal(df, symbol, timeframe)
+
+            # Sinyali tüm yetkili kullanıcılara gönder
+            for chat_id in authorized_users:
+                try:
+                    await app.bot.send_message(chat_id=chat_id, text=message)
+                    print(f"Sinyal gönderildi: {chat_id}, {symbol}")
+                except Exception as e:
+                    if "Chat not found" in str(e):
+                        print(f"Sinyal gönderilemedi ({chat_id}): Chat not found, atlanıyor.")
+                    else:
+                        print(f"Sinyal gönderilemedi ({chat_id}): {e}")
+
+            # 2 saat bekle
+            print(f"2 saat bekleniyor... ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
+            await asyncio.sleep(7200)
+
+        except Exception as e:
+            print(f"Periyodik sinyal hatası: {e}")
+            traceback.print_exc()
+            print(f"Hata sonrası 2 saat bekleniyor... ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
+            await asyncio.sleep(7200)
+
 # Telegram komutları
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
@@ -501,7 +547,6 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(f'❌ Hata: {symbol} için sinyal üretilemedi. {str(e)}')
                 return
     else:
-        # Hiç parametre yoksa Binance top 50 hacimli coinlerden rastgele seç
         top50_pairs = await get_top_50_binance_pairs()
         if not top50_pairs:
             await update.message.reply_text('❌ Binance top 50 coinler alınamadı!')
@@ -518,38 +563,6 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(f'❌ Hata: {symbol} için sinyal üretilemedi. {str(e)}')
                 return
 
-# Favori coin işlemleri için veritabanı fonksiyonları
-def get_favorites(user_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT favorites FROM users WHERE user_id = ?', (user_id,))
-    result = c.fetchone()
-    conn.close()
-    if result and result[0]:
-        return result[0].split(',')
-    return []
-
-def add_favorite(user_id, coin):
-    favorites = get_favorites(user_id)
-    if coin not in favorites:
-        favorites.append(coin)
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('UPDATE users SET favorites = ? WHERE user_id = ?', (','.join(favorites), user_id))
-    conn.commit()
-    conn.close()
-
-def remove_favorite(user_id, coin):
-    favorites = get_favorites(user_id)
-    if coin in favorites:
-        favorites.remove(coin)
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('UPDATE users SET favorites = ? WHERE user_id = ?', (','.join(favorites), user_id))
-    conn.commit()
-    conn.close()
-
-# Favori coin komutları
 async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     user = check_chat_id(chat_id)
@@ -597,8 +610,6 @@ async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text('⭐ Henüz favori coin eklemediniz.')
 
-# Yeni eklenen komutlar: Tüm kullanıcıları ve belirli kullanıcıyı çıkış yaptırma
-# Tüm kullanıcıları çıkış yaptır
 async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     user = check_chat_id(chat_id)
@@ -614,11 +625,10 @@ async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('✅ Tüm kullanıcılar çıkış yaptı.')
     print(f'Tüm kullanıcılar çıkış yaptı: {chat_id}')
 
-# Belirli kullanıcıyı çıkış yaptır
 async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     user = check_chat_id(chat_id)
-    if not user or user[0]!= 'yetkiliadmin':
+    if not user or user[0] != 'yetkiliadmin':
         await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
         return
 
@@ -640,7 +650,6 @@ async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f'✅ {target_user_id} kullanıcısı çıkış yaptı.')
     print(f'Kullanıcı çıkış yaptı: {target_user_id}, {chat_id}')
 
-# Bilgi ve yardım komutları
 async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bilgi_text = (
         'ℹ️ *SmartKoinBot Hakkında Detaylı Bilgi*\n\n'
@@ -655,14 +664,14 @@ async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         '- /sinyal BTC 1\n'
         '- /sinyal\n'
         'Her türlü soru ve destek için: @finetictradee veya finetictrade@gmail.com\n'
-        'Gizlilik: Kullanıcı verileriniz üçüncü kişilerle paylaşılmaz.\n'
+        'Gizlilik: Kullanıcı verileriniz üçüncü kişilerle paylaşılmaz.'
     )
     await update.message.reply_text(bilgi_text, parse_mode='HTML')
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = (
         '🤖 *Komutlar ve Açıklamaları:*\n\n'
-        '/sinyal [COIN] [1|2|4|6] - Rasgele veya Saatlik sinyal alırsın. (Örnek: /sinyal BTC 1 veya /sinyal)\n'
+        '/sinyal [COIN] [1|2|4|6] - Rasgele veya Saatlik sinyaller alırsın. (Örnek: /sinyal BTC 1 veya /sinyal)\n'
         '/help - Bu yardım menüsünü gösterir.\n'
         '/bilgi - Botun detaylı açıklaması ve kullanım rehberi.\n'
     )
@@ -685,12 +694,21 @@ async def top30(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = await get_top_30_coins()
     await update.message.reply_text(message)
 
-# Botu başlat
+# Botu kapat
 async def shutdown(app, binance):
     if app:
-        await app.stop()
-        await app.shutdown()
-    await binance.close()
+        try:
+            await app.stop()
+            await app.shutdown()
+            print("Bot düzgün şekilde durduruldu.")
+        except Exception as e:
+            print(f'Kapatma sırasında hata: {e}')
+    if binance:
+        try:
+            await binance.close()
+            print("Binance bağlantısı kapatıldı.")
+        except Exception as e:
+            print(f'Binance kapatma hatası: {e}')
 
 def main():
     loop = asyncio.new_event_loop()
@@ -698,7 +716,6 @@ def main():
     app = None
     try:
         init_db()
-        # Binance bağlantısını test et
         loop.run_until_complete(test_binance_connection())
         app = Application.builder().token(TELEGRAM_TOKEN).build()
         app.add_handler(CommandHandler('start', start))
@@ -709,24 +726,28 @@ def main():
         app.add_handler(CommandHandler('favorilerim', favorilerim))
         app.add_handler(CommandHandler('bilgi', bilgi))
         app.add_handler(CommandHandler('help', help_command))
-        # Yeni eklenen komut handler'ları
         app.add_handler(CommandHandler('tumcikis', tum_cikis))
         app.add_handler(CommandHandler('kullanicicikis', kullanici_cikis))
+
+        # Periyodik sinyal görevini başlat
+        loop.create_task(send_periodic_signals(app))
+
         print('Bot başlatılıyor...')
         loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
     except KeyboardInterrupt:
         print('Bot durduruluyor...')
+        if app:
+            # Kapatma işlemini mevcut döngüde yap
+            loop.run_until_complete(shutdown(app, BINANCE))
     except Exception as e:
         print(f'Hata: {e}')
         traceback.print_exc()
     finally:
+        # Döngü kapanmadan önce açık kaynakları temizle
         if not loop.is_closed():
-            try:
-                loop.run_until_complete(shutdown(app, BINANCE))
-            except Exception as e:
-                print(f'Kapatma sırasında hata: {e}')
-            finally:
-                loop.close()
+            loop.run_until_complete(loop.shutdown_asyncgens())
+            loop.close()
+        print("Olay döngüsü kapatıldı.")
 
 if __name__ == '__main__':
     main()
