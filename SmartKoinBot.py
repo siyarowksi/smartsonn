@@ -21,7 +21,7 @@ if platform.system() == "Windows":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Ortam değişkenleri
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAEzKfKf83Lp5fdae2_PTkAw9Qo3_0bNRfw')
 CMC_API_KEY = os.getenv('CMC_API_KEY', '')
 DB_FILE = 'users.db'
 
