@@ -4,7 +4,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 import ccxt.async_support as ccxt_async
-from datetime import datetime
+from datetime import datetime, timedelta
 import traceback
 import random
 from telegram import Update
@@ -42,6 +42,9 @@ VALID_TIMEFRAMES = ['1h', '2h', '4h', '6h']
 TICKERS_CACHE = None
 TICKERS_CACHE_TIME = None
 TICKERS_CACHE_DURATION = 120
+
+# Sinyal izleme için global liste
+active_signals = []  # (tp, sl, signal_type, symbol, timeframe, chat_ids)
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)
@@ -193,6 +196,15 @@ async def get_price_data(symbol, timeframe='1h', limit=100):
         DATA_CACHE[cache_key] = (df, datetime.now())
         return df
     except Exception as e:
+        print(f'Veri alınamadı ({symbol}, {timeframe}): {e}')
+        return None
+
+async def get_current_price(symbol):
+    try:
+        ticker = await BINANCE.fetch_ticker(symbol)
+        return ticker['last']
+    except Exception as e:
+        print(f'Fiyat alınamadı ({symbol}): {e}')
         return None
 
 async def get_top_30_coins():
@@ -308,7 +320,7 @@ def calculate_atr(df, periods=14):
 
 def generate_signal(df, symbol, timeframe):
     if df is None or len(df) < 50 or not all(col in df.columns for col in ['open', 'high', 'low', 'close', 'volume']):
-        return None
+        return None, None
 
     df['rsi'] = calculate_rsi(df['close'])
     df['macd'], df['macd_signal'] = calculate_macd(df['close'])
@@ -322,7 +334,7 @@ def generate_signal(df, symbol, timeframe):
     df['atr'] = calculate_atr(df)
 
     if df[['rsi', 'macd', 'bb_upper', 'bb_lower', 'atr']].iloc[-1].isna().any():
-        return None
+        return None, None
 
     latest_rsi = df['rsi'].iloc[-1]
     latest_macd = df['macd'].iloc[-1]
@@ -410,17 +422,58 @@ def generate_signal(df, symbol, timeframe):
         take_profit = latest_price - (4 * latest_atr)
         rr = (latest_price - take_profit) / (stop_loss - latest_price) if stop_loss != latest_price else 0
     else:
-        return None
+        return None, None
 
     message = (
         f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
         f'🕒 Zaman Dilimi: {timeframe}\n'
-        f'💵 Fiyat: {latest_price:.7f} USDT\n'
-        f'🎯 Kâr Al: {take_profit:.7f} USDT\n'
-        f'🛡️ Zarar Durdur: {stop_loss:.7f} USDT\n'
+        f'💵 Fiyat: {latest_price:.8f} USDT\n'
+        f'🎯 Kâr Al: {take_profit:.8f} USDT\n'
+        f'🛡️ Zarar Durdur: {stop_loss:.8f} USDT\n'
         f'📊 Risk-Ödül Oranı: {rr:.2f}'
     )
-    return message
+    return message, [take_profit, stop_loss, signal_type, symbol, timeframe]
+
+async def monitor_price(app):
+    while True:
+        try:
+            current_time = datetime.now()
+            for signal in active_signals[:]:
+                symbol = signal[3]
+                timeframe = signal[4]
+                tp = signal[0]
+                sl = signal[1]
+                signal_type = signal[2]
+                chat_ids = signal[5]
+
+                current_price = await get_current_price(symbol)
+                if current_price is None:
+                    continue
+
+                if signal_type == 'Uzun':
+                    if current_price >= tp:
+                        for chat_id in chat_ids:
+                            await app.bot.send_message(chat_id=chat_id, text=f"🟢 TP hedefi gerçekleşti | #{symbol.replace('/', '')} {timeframe}")
+                        active_signals.remove(signal)
+                    elif current_price <= sl:
+                        for chat_id in chat_ids:
+                            await app.bot.send_message(chat_id=chat_id, text=f"🔴 Stop Loss oldu | #{symbol.replace('/', '')} {timeframe}")
+                        active_signals.remove(signal)
+                else:  # Kısa
+                    if current_price <= tp:
+                        for chat_id in chat_ids:
+                            await app.bot.send_message(chat_id=chat_id, text=f"🟢 TP hedefi gerçekleşti | #{symbol.replace('/', '')} {timeframe}")
+                        active_signals.remove(signal)
+                    elif current_price >= sl:
+                        for chat_id in chat_ids:
+                            await app.bot.send_message(chat_id=chat_id, text=f"🔴 Stop Loss oldu | #{symbol.replace('/', '')} {timeframe}")
+                        active_signals.remove(signal)
+
+            # 5 dakikada bir kontrol
+            await asyncio.sleep(300)
+        except Exception as e:
+            print(f'Fiyat izleme hatası: {e}')
+            await asyncio.sleep(300)
 
 async def test_binance_connection():
     try:
@@ -461,15 +514,18 @@ async def send_periodic_signals(app: Application):
                 symbol = random.choice(available_coins)
                 tried_coins.add(symbol)
                 df = await get_price_data(symbol, timeframe)
-                message = generate_signal(df, symbol, timeframe)
-                if message:
-                    for chat_id in authorized_users:
-                        try:
-                            await app.bot.send_message(chat_id=chat_id, text=message)
-                            print(f"Sinyal gönderildi: {chat_id}, {symbol}")
-                        except Exception as e:
-                            print(f"Sinyal gönderilemedi ({chat_id}): {e}")
-                    break
+                result = generate_signal(df, symbol, timeframe)
+                if result[0] is None:  # Eğer sinyal üretilmediyse
+                    continue
+                message, levels = result
+                for chat_id in authorized_users:
+                    try:
+                        await app.bot.send_message(chat_id=chat_id, text=message)
+                        print(f"Sinyal gönderildi: {chat_id}, {symbol}")
+                    except Exception as e:
+                        print(f"Sinyal gönderilemedi ({chat_id}): {e}")
+                active_signals.append([levels[0], levels[1], levels[2], symbol, timeframe, authorized_users])
+                break
             print(f"2 saat bekleniyor... ({datetime.now()})")
             await asyncio.sleep(7200)
         except Exception as e:
@@ -480,7 +536,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     args = context.args
     if not args:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile bir ID girin.')
         return
     user_id = args[0]
     result = check_user(user_id)
@@ -489,15 +545,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if saved_chat_id is None:
             save_user(user_id, chat_id)
             await update.message.reply_text(
-                f'🚀 Yetki alındı! Kullanıcı ID: {user_id}\n📡 Sinyal almak için /sinyal yaz.'
+                f'🚀 Yetki alındı!\n📡 Sinyal almak için /sinyal yaz.'
             )
         elif saved_chat_id == chat_id:
             await update.message.reply_text(
-                f'🚀 Zaten yetkiniz var! Kullanıcı ID: {user_id}\n📡 Sinyal almak için /sinyal yaz.'
+                f'🚀 Zaten yetkiniz var!\n📡 Sinyal almak için /sinyal yaz.'
             )
         else:
             await update.message.reply_text(
-                f'🚫 Bu kullanıcı ID ({user_id}) başka bir hesaba kayıtlı!'
+                f'🚫 Bu ID başka bir hesaba kayıtlı!'
             )
     else:
         await update.message.reply_text('🚫 Geçersiz ID! Lütfen doğru ID ile tekrar deneyin.')
@@ -505,7 +561,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     if not check_chat_id(chat_id):
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
         return
 
     args = context.args
@@ -543,9 +599,11 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             symbol = None
         else:
             df = await get_price_data(symbol, timeframe)
-            message = generate_signal(df, symbol, timeframe)
-            if message:
+            result = generate_signal(df, symbol, timeframe)
+            if result[0] is not None:
+                message, levels = result
                 await update.message.reply_text(message)
+                active_signals.append([levels[0], levels[1], levels[2], symbol, timeframe, [chat_id]])
                 return
             tried_coins.add(symbol)
     while True:
@@ -556,16 +614,18 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         symbol = random.choice(available_coins)
         tried_coins.add(symbol)
         df = await get_price_data(symbol, timeframe)
-        message = generate_signal(df, symbol, timeframe)
-        if message:
+        result = generate_signal(df, symbol, timeframe)
+        if result[0] is not None:
+            message, levels = result
             await update.message.reply_text(message)
+            active_signals.append([levels[0], levels[1], levels[2], symbol, timeframe, [chat_id]])
             return
 
 async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     user = check_chat_id(chat_id)
     if not user:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
         return
     user_id = user[0]
     args = context.args
@@ -594,7 +654,7 @@ async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     user = check_chat_id(chat_id)
     if not user:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
         return
     user_id = user[0]
     favs = get_favorites(user_id)
@@ -629,27 +689,27 @@ async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     target_user_id = args[0]
     if not check_user(target_user_id):
-        await update.message.reply_text(f'❌ Kullanıcı ID {target_user_id} bulunamadı!')
+        await update.message.reply_text(f'❌ Kullanıcı ID bulunamadı!')
         return
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('UPDATE users SET chat_id = NULL WHERE user_id = ?', (target_user_id,))
     conn.commit()
     conn.close()
-    await update.message.reply_text(f'✅ {target_user_id} kullanıcısı çıkış yaptı.')
+    await update.message.reply_text(f'✅ Kullanıcı çıkış yaptı.')
     print(f'Kullanıcı çıkış yaptı: {target_user_id}, {chat_id}')
 
 async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bilgi_text = (
-        'ℹ️ *Finetich Trade Hakkında Detaylı Bilgi*\n\n'
-        'Finetich Trade, Binance spot piyasasındaki USDT pariteleri için teknik analiz tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
+        'ℹ️ *SmartKoinBot Hakkında Detaylı Bilgi*\n\n'
+        'SmartKoinBot, Binance spot piyasasındaki USDT pariteleri için teknik analiz tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
         '*Özellikler:*\n'
         '- Gerçek zamanlı teknik analiz (RSI, MACD, Bollinger, EMA, vb.)\n'
         '- Kullanıcıya özel yetkilendirme ve güvenlik\n'
         '- Gelişmiş /help ve /bilgi menüleri\n'
         '- (Yakında) Sinyal geçmişi, premium sistem, alarm, admin paneli ve daha fazlası!\n\n'
         '*Kullanım için örnekler:*\n'
-        '- /start id adresiniz\n'
+        '- /start ile yetki al\n'
         '- /sinyal BTC 1\n'
         '- /sinyal\n'
         'Her türlü soru ve destek için: @finetictradee veya finetictrade@gmail.com\n'
@@ -670,15 +730,15 @@ async def exit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     result = check_chat_id(chat_id)
     if not result:
-        await update.message.reply_text('🚫 Yetkisiz erişim! Önce /start id ile yetki almalısınız.')
+        await update.message.reply_text('🚫 Yetkisiz erişim! Önce /start ile yetki almalısınız.')
         return
     exit_user(chat_id)
-    await update.message.reply_text('✅ Başarıyla çıkış yaptınız. Tekrar giriş için /start id kullanabilirsiniz.')
+    await update.message.reply_text('✅ Başarıyla çıkış yaptınız. Tekrar giriş için /start kullanabilirsiniz.')
 
 async def top30(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     if not check_chat_id(chat_id):
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
         return
     message = await get_top_30_coins()
     await update.message.reply_text(message)
@@ -716,6 +776,7 @@ def main():
         app.add_handler(CommandHandler('tumcikis', tum_cikis))
         app.add_handler(CommandHandler('kullanicicikis', kullanici_cikis))
         loop.create_task(send_periodic_signals(app))
+        loop.create_task(monitor_price(app))
         print('Bot başlatılıyor...')
         loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
     except KeyboardInterrupt:
@@ -740,5 +801,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    #kod güncellendi
