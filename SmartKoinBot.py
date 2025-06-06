@@ -653,13 +653,14 @@ async def test_binance_connection():
 
 
 async def send_periodic_signals(app: Application):
-    signal_count = 0
+    print("Otomatik sinyal döngüsü başlatıldı.")
     while True:
         try:
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Sinyal üretimi başlıyor...")
             authorized_users = get_authorized_users()
             if not authorized_users:
                 print("Hiçbir yetkili kullanıcı bulunamadı.")
-                await asyncio.sleep(7200)
+                await asyncio.sleep(7200)  # 2 saat bekle
                 continue
 
             top50_pairs = await get_top_50_binance_pairs()
@@ -675,6 +676,7 @@ async def send_periodic_signals(app: Application):
             while signal_count < MAX_SIGNALS_PER_CYCLE and tried_coins != set(top50_pairs):
                 available_coins = [coin for coin in top50_pairs if coin not in tried_coins]
                 if not available_coins:
+                    print("Tüm coin'ler denendi, sinyal üretilemedi.")
                     break
                 symbol = random.choice(available_coins)
                 tried_coins.add(symbol)
@@ -686,7 +688,8 @@ async def send_periodic_signals(app: Application):
                     for chat_id in authorized_users:
                         try:
                             await app.bot.send_message(chat_id=chat_id, text=message)
-                            print(f"Sinyal gönderildi: {chat_id}, {symbol}")
+                            print(
+                                f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                         except Exception as e:
                             print(f"Sinyal gönderilemedi ({chat_id}): {e}")
                     signal_count += 1
@@ -710,10 +713,12 @@ async def send_periodic_signals(app: Application):
                     except Exception as e:
                         print(f"Performans raporu gönderilemedi ({chat_id}): {e}")
 
-            print(f"2 saat bekleniyor... ({datetime.now()})")
-            await asyncio.sleep(7200)
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 2 saat bekleniyor...")
+            await asyncio.sleep(7200)  # 2 saat bekle
         except Exception as e:
             print(f"Periyodik sinyal hatası: {e}")
+            traceback.print_exc()
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Hata sonrası 2 saat bekleniyor...")
             await asyncio.sleep(7200)
 
 
