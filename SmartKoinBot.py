@@ -43,7 +43,6 @@ VALID_TIMEFRAMES = ['1h', '2h', '4h', '6h']
 TICKERS_CACHE = None
 TICKERS_CACHE_TIME = None
 TICKERS_CACHE_DURATION = 120
-MAX_SIGNALS_PER_CYCLE = 1  # Her 2 saatte 1 sinyal
 
 # Global değişken: Sinyalin gönderildiği kullanıcıları takip etmek için
 signal_chat_ids = {}  # signal_id -> [chat_ids]
@@ -113,10 +112,21 @@ def exit_user(chat_id):
 def get_authorized_users():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
+    # Veritabanındaki tüm kullanıcıları ve chat ID’lerini yazdır
+    c.execute('SELECT user_id, chat_id FROM users')
+    all_users = c.fetchall()
+    print(f"Tüm kullanıcılar: {all_users}")
+
+    # Chat ID’si NULL olmayan kullanıcıları al
     c.execute('SELECT chat_id FROM users WHERE chat_id IS NOT NULL')
     results = c.fetchall()
     conn.close()
-    return [row[0] for row in results if row[0] is not None and row[0] > 0]  # Geçersiz chat ID’leri filtrele
+    authorized = [row[0] for row in results if row[0] is not None and row[0] > 0]
+    print(f"Yetkili kullanıcılar (chat_id'ler): {authorized}")
+    if not authorized:
+        print(
+            "Yetkili kullanıcı bulunamadı. Lütfen kullanıcıların /start komutuyla chat ID’lerini kaydetmesini sağlayın.")
+    return authorized
 
 
 def get_favorites(user_id):
@@ -485,6 +495,7 @@ def generate_signal(df, symbol, timeframe):
     latest_cci = df['cci'].iloc[-1]
     latest_williams_r = df['williams_r'].iloc[-1]
     latest_mfi = df['mfi'].iloc[-1]
+    latest_atr = df['atr'].iloc[-1]
 
     buy_signals = []
     sell_signals = []
@@ -548,14 +559,14 @@ def generate_signal(df, symbol, timeframe):
     if buy_count > sell_count and buy_count > 0:
         signal_type = 'Uzun'
         signal_emoji = '🟢'
-        stop_loss = latest_price * (1 - 0.03)
-        take_profit = latest_price * (1 + 0.06)
+        stop_loss = latest_price - (2 * latest_atr)
+        take_profit = latest_price + (4 * latest_atr)
         rr = (take_profit - latest_price) / (latest_price - stop_loss) if latest_price != stop_loss else 0
     elif sell_count > buy_count and sell_count > 0:
         signal_type = 'Kısa'
         signal_emoji = '🔴'
-        stop_loss = latest_price * (1 + 0.03)
-        take_profit = latest_price * (1 - 0.06)
+        stop_loss = latest_price + (2 * latest_atr)
+        take_profit = latest_price - (4 * latest_atr)
         rr = (latest_price - take_profit) / (stop_loss - latest_price) if stop_loss != latest_price else 0
     else:
         return None
@@ -563,9 +574,9 @@ def generate_signal(df, symbol, timeframe):
     message = (
         f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
         f'🕒 Zaman Dilimi: {timeframe}\n'
-        f'💵 Fiyat: {latest_price:.8f} USDT\n'
-        f'🎯 Kâr Al: {take_profit:.8f} USDT\n'
-        f'🛡️ Zarar Durdur: {stop_loss:.8f} USDT\n'
+        f'💵 Fiyat: {latest_price:.7f} USDT\n'
+        f'🎯 Kâr Al: {take_profit:.7f} USDT\n'
+        f'🛡️ Zarar Durdur: {stop_loss:.7f} USDT\n'
         f'📊 Risk-Ödül Oranı: {rr:.2f}'
     )
 
@@ -586,8 +597,8 @@ async def notify_signal_result(app, signal_id, result, current_price):
     message = (
         f'{result_emoji} Sinyal Sonucu | #{symbol.replace("/", "")}\n'
         f'📈 Tür: {signal_type}\n'
-        f'💵 Giriş Fiyatı: {entry_price:.8f} USDT\n'
-        f'🎯 {target_reached}: {current_price:.8f} USDT\n'
+        f'💵 Giriş Fiyatı: {entry_price:.7f} USDT\n'
+        f'🎯 {target_reached}: {current_price:.7f} USDT\n'
         f'🕒 Zaman: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
     )
     for chat_id in chat_ids:
@@ -660,7 +671,7 @@ async def send_periodic_signals(app: Application):
             authorized_users = get_authorized_users()
             if not authorized_users:
                 print("Hiçbir yetkili kullanıcı bulunamadı.")
-                await asyncio.sleep(7200)  # 2 saat bekle
+                await asyncio.sleep(7200)
                 continue
 
             top50_pairs = await get_top_50_binance_pairs()
@@ -671,12 +682,10 @@ async def send_periodic_signals(app: Application):
 
             timeframe = random.choice(VALID_TIMEFRAMES)
             tried_coins = set()
-            signal_count = 0  # Her döngüde sıfırla
-
-            while signal_count < MAX_SIGNALS_PER_CYCLE and tried_coins != set(top50_pairs):
+            while True:
                 available_coins = [coin for coin in top50_pairs if coin not in tried_coins]
                 if not available_coins:
-                    print("Tüm coin'ler denendi, sinyal üretilemedi.")
+                    print("Tüm coin’ler denendi, 2 saat bekleniyor.")
                     break
                 symbol = random.choice(available_coins)
                 tried_coins.add(symbol)
@@ -691,32 +700,12 @@ async def send_periodic_signals(app: Application):
                             print(
                                 f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                         except Exception as e:
-                            print(f"Sinyal gönderilemedi ({chat_id}): {e}")
-                    signal_count += 1
-                    break  # 1 sinyal gönderildikten sonra döngüden çık
-
-            # Gece 00:00'da performans raporu
-            now = datetime.now()
-            if now.hour == 0 and now.minute == 0:
-                total_trades, successful_trades, failed_trades = get_signal_performance()
-                performance_message = (
-                    f'📊 *Sinyal Performans Raporu (Son 48 Saat)*\n'
-                    f'🕒 Tarih: {now.strftime("%Y-%m-%d %H:%M:%S")}\n'
-                    f'📈 Toplam İşlem: {total_trades}\n'
-                    f'✅ Başarılı İşlem: {successful_trades}\n'
-                    f'❌ Başarısız İşlem: {failed_trades}'
-                )
-                for chat_id in authorized_users:
-                    try:
-                        await app.bot.send_message(chat_id=chat_id, text=performance_message, parse_mode='Markdown')
-                        print(f"Performans raporu gönderildi: {chat_id}")
-                    except Exception as e:
-                        print(f"Performans raporu gönderilemedi ({chat_id}): {e}")
-
+                            print(f"Otomatik sinyal gönderilemedi ({chat_id}): {e}")
+                    break
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 2 saat bekleniyor...")
             await asyncio.sleep(7200)  # 2 saat bekle
         except Exception as e:
-            print(f"Periyodik sinyal hatası: {e}")
+            print(f"Otomatik sinyal hatası: {e}")
             traceback.print_exc()
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Hata sonrası 2 saat bekleniyor...")
             await asyncio.sleep(7200)
