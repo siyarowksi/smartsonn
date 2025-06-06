@@ -667,16 +667,19 @@ async def send_periodic_signals(app: Application):
                 signal_result = generate_signal(df, symbol, timeframe)
                 if signal_result is not None:
                     message, signal_id = signal_result
-                    # Botun çalıştığı tüm chat’lere sinyal gönder
-                    async for dialog in app.bot.get_updates(timeout=10):
-                        chat_id = dialog.message.chat_id
-                        signal_chat_ids[signal_id] = [chat_id]  # Her chat’e ayrı ayrı gönder
-                        try:
-                            await app.bot.send_message(chat_id=chat_id, text=message)
-                            print(
-                                f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                        except Exception as e:
-                            print(f"Otomatik sinyal gönderilemedi ({chat_id}): {e}")
+                    # Son komutun geldiği chat’e sinyal gönder
+                    updates = await app.bot.get_updates(timeout=10)
+                    if updates:
+                        for update in updates:
+                            if hasattr(update, 'message') and update.message.chat_id:
+                                chat_id = update.message.chat_id
+                                signal_chat_ids[signal_id] = [chat_id]
+                                try:
+                                    await app.bot.send_message(chat_id=chat_id, text=message)
+                                    print(
+                                        f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                                except Exception as e:
+                                    print(f"Otomatik sinyal gönderilemedi ({chat_id}): {e}")
                     break
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 2 saat bekleniyor...")
             await asyncio.sleep(7200)  # 2 saat bekle
