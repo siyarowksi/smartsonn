@@ -46,6 +46,7 @@ TICKERS_CACHE_DURATION = 120
 
 # Global değişken: Sinyalin gönderildiği kullanıcıları takip etmek için
 signal_chat_ids = {}  # signal_id -> [chat_ids]
+active_chat_id = None  # Son aktif chat ID’sini sakla
 
 
 def init_db():
@@ -107,26 +108,6 @@ def exit_user(chat_id):
     c.execute('UPDATE users SET chat_id = NULL WHERE chat_id = ?', (chat_id,))
     conn.commit()
     conn.close()
-
-
-def get_authorized_users():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    # Veritabanındaki tüm kullanıcıları ve chat ID’lerini yazdır
-    c.execute('SELECT user_id, chat_id FROM users')
-    all_users = c.fetchall()
-    print(f"Tüm kullanıcılar: {all_users}")
-
-    # Chat ID’si NULL olmayan kullanıcıları al
-    c.execute('SELECT chat_id FROM users WHERE chat_id IS NOT NULL')
-    results = c.fetchall()
-    conn.close()
-    authorized = [row[0] for row in results if row[0] is not None and row[0] > 0]
-    print(f"Yetkili kullanıcılar (chat_id'ler): {authorized}")
-    if not authorized:
-        print(
-            "Yetkili kullanıcı bulunamadı. Lütfen kullanıcıların /start komutuyla chat ID’lerini kaydetmesini sağlayın.")
-    return authorized
 
 
 def get_favorites(user_id):
@@ -668,9 +649,9 @@ async def send_periodic_signals(app: Application):
     while True:
         try:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Sinyal üretimi başlıyor...")
-            authorized_users = get_authorized_users()
-            if not authorized_users:
-                print("Hiçbir yetkili kullanıcı bulunamadı.")
+            global active_chat_id
+            if active_chat_id is None:
+                print("Aktif bir chat ID’si bulunamadı. Lütfen botu bir chat veya grupta çalıştırın.")
                 await asyncio.sleep(7200)
                 continue
 
@@ -693,14 +674,13 @@ async def send_periodic_signals(app: Application):
                 signal_result = generate_signal(df, symbol, timeframe)
                 if signal_result is not None:
                     message, signal_id = signal_result
-                    signal_chat_ids[signal_id] = authorized_users  # Sinyali alan kullanıcıları kaydet
-                    for chat_id in authorized_users:
-                        try:
-                            await app.bot.send_message(chat_id=chat_id, text=message)
-                            print(
-                                f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                        except Exception as e:
-                            print(f"Otomatik sinyal gönderilemedi ({chat_id}): {e}")
+                    signal_chat_ids[signal_id] = [active_chat_id]  # Sinyali son aktif chat’e gönder
+                    try:
+                        await app.bot.send_message(chat_id=active_chat_id, text=message)
+                        print(
+                            f"Otomatik sinyal gönderildi: {active_chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    except Exception as e:
+                        print(f"Otomatik sinyal gönderilemedi ({active_chat_id}): {e}")
                     break
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 2 saat bekleniyor...")
             await asyncio.sleep(7200)  # 2 saat bekle
@@ -712,37 +692,16 @@ async def send_periodic_signals(app: Application):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    args = context.args
-    if not args:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile bir ID girin.')
-        return
-    user_id = args[0]
-    result = check_user(user_id)
-    if result:
-        saved_chat_id = result[0]
-        if saved_chat_id is None:
-            save_user(user_id, chat_id)
-            await update.message.reply_text(
-                f'🚀 Yetki alındı!\n📡 Sinyal almak için /sinyal yaz.'
-            )
-        elif saved_chat_id == chat_id:
-            await update.message.reply_text(
-                f'🚀 Zaten yetkiniz var!\n📡 Sinyal almak için /sinyal yaz.'
-            )
-        else:
-            await update.message.reply_text(
-                f'🚫 Bu ID başka bir hesaba kayıtlı!'
-            )
-    else:
-        await update.message.reply_text('🚫 Geçersiz ID! Lütfen doğru ID ile tekrar deneyin.')
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    await update.message.reply_text('🚀 Bot aktif! Otomatik sinyaller bu chat’e gönderilecek.')
 
 
 async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    if not check_chat_id(chat_id):
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
-        return
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
 
     args = context.args
     coin = None
@@ -782,7 +741,7 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             signal_result = generate_signal(df, symbol, timeframe)
             if signal_result is not None:
                 message, signal_id = signal_result
-                signal_chat_ids[signal_id] = [chat_id]  # Manuel sinyal için yalnızca bu kullanıcı
+                signal_chat_ids[signal_id] = [active_chat_id]
                 await update.message.reply_text(message)
                 return
             tried_coins.add(symbol)
@@ -797,31 +756,29 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         signal_result = generate_signal(df, symbol, timeframe)
         if signal_result is not None:
             message, signal_id = signal_result
-            signal_chat_ids[signal_id] = [chat_id]  # Manuel sinyal için yalnızca bu kullanıcı
+            signal_chat_ids[signal_id] = [active_chat_id]
             await update.message.reply_text(message)
             return
 
 
 async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
-        return
-    user_id = user[0]
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
     args = context.args
-    favorites = get_favorites(user_id)
+    favorites = get_favorites('default')  # Basit bir favori listesi, kullanıcıya bağlı değil
     if args:
         action = args[0].lower()
         if action == 'ekle' and len(args) > 1:
             coin = args[1].upper()
-            add_favorite(user_id, coin)
-            await update.message.reply_text(f'✅ {coin} favorilerinize eklendi.')
+            add_favorite('default', coin)
+            await update.message.reply_text(f'✅ {coin} favorilere eklendi.')
             return
         elif action == 'sil' and len(args) > 1:
             coin = args[1].upper()
-            remove_favorite(user_id, coin)
-            await update.message.reply_text(f'❌ {coin} favorilerinizden silindi.')
+            remove_favorite('default', coin)
+            await update.message.reply_text(f'❌ {coin} favorilerden silindi.')
             return
         else:
             await update.message.reply_text('Kullanım: /favori ekle BTC veya /favori sil ETH')
@@ -829,27 +786,27 @@ async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not favorites:
         await update.message.reply_text('⭐ Henüz favori coin eklemediniz. /favori ekle BTC gibi ekleyebilirsiniz.')
         return
-    await update.message.reply_text('⭐ Favori coinleriniz: ' + ', '.join(favorites))
+    await update.message.reply_text('⭐ Favori coinler: ' + ', '.join(favorites))
 
 
 async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
-        return
-    user_id = user[0]
-    favs = get_favorites(user_id)
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
+    favs = get_favorites('default')  # Basit bir favori listesi
     if favs:
-        await update.message.reply_text('⭐ Favori coinleriniz: ' + ', '.join(favs))
+        await update.message.reply_text('⭐ Favori coinler: ' + ', '.join(favs))
     else:
         await update.message.reply_text('⭐ Henüz favori coin eklemediniz.')
 
 
 async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user or user[0] != 'yetkiliadmin':
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
+    if active_chat_id is None or str(active_chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
         await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
         return
     conn = sqlite3.connect(DB_FILE)
@@ -858,13 +815,15 @@ async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.commit()
     conn.close()
     await update.message.reply_text('✅ Tüm kullanıcılar çıkış yaptı.')
-    print(f'Tüm kullanıcılar çıkış yaptı: {chat_id}')
+    print(f'Tüm kullanıcılar çıkış yaptı: {active_chat_id}')
 
 
 async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user or user[0] != 'yetkiliadmin':
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
+    if active_chat_id is None or str(active_chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
         await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
         return
     args = context.args
@@ -880,21 +839,24 @@ async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     c.execute('UPDATE users SET chat_id = NULL WHERE user_id = ?', (target_user_id,))
     conn.commit()
     conn.close()
-    await update.message.reply_text(f'✅ Kullanıcı çıkış yaptı.')
-    print(f'Kullanıcı çıkış yaptı: {target_user_id}, {chat_id}')
+    await update.message.reply_text(f'✅ {target_user_id} kullanıcısı çıkış yaptı.')
+    print(f'Kullanıcı çıkış yaptı: {target_user_id}, {active_chat_id}')
 
 
 async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
     bilgi_text = (
         'ℹ️ *SmartKoinBot Hakkında Detaylı Bilgi*\n\n'
         'SmartKoinBot, Binance spot piyasasındaki USDT pariteleri için teknik analiz tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
         '*Özellikler:*\n'
         '- Gerçek zamanlı teknik analiz (RSI, MACD, Bollinger, vb.)\n'
-        '- Kullanıcıya özel yetkilendirme ve güvenlik\n'
+        '- Otomatik sinyal gönderimi (aktif chat’e)\n'
         '- Gelişmiş /help ve /bilgi menüleri\n'
-        '- (Yakında) Sinyal geçmişi, premium sistem, alarm, admin paneli ve daha fazlası!\n\n'
+        '- (Yakında) Sinyal geçmişi, premium sistem, alarm ve daha fazlası!\n\n'
         '*Kullanım için örnekler:*\n'
-        '- /start ile yetki al\n'
         '- /sinyal BTC 1\n'
         '- /sinyal\n'
         'Her türlü soru ve destek için: @finetictradee veya finetictrade@gmail.com\n'
@@ -904,6 +866,10 @@ async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
     help_text = (
         '🤖 *Komutlar ve Açıklamaları:*\n\n'
         '/sinyal [COIN] [1|2|4|6] - Rasgele veya Saatlik sinyaller alırsın. (Örnek: /sinyal BTC 1 veya /sinyal)\n'
@@ -914,20 +880,22 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def exit(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    result = check_chat_id(chat_id)
-    if not result:
-        await update.message.reply_text('🚫 Yetkisiz erişim! Önce /start ile yetki almalısınız.')
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
+    if active_chat_id is None:
+        await update.message.reply_text('🚫 Aktif bir chat bulunamadı.')
         return
-    exit_user(chat_id)
-    await update.message.reply_text('✅ Başarıyla çıkış yaptınız. Tekrar giriş için /start kullanabilirsiniz.')
+    await update.message.reply_text('✅ Çıkış yapıldı. Bot bu chat’ten sinyal göndermeyi durduracak.')
+    active_chat_id = None
 
 
 async def top30(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    if not check_chat_id(chat_id):
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start ile yetki al.')
-        return
+    global active_chat_id
+    active_chat_id = update.message.chat_id
+    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+
     message = await get_top_30_coins()
     await update.message.reply_text(message)
 
