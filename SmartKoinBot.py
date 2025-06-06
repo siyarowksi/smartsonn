@@ -46,7 +46,6 @@ TICKERS_CACHE_DURATION = 120
 
 # Global değişken: Sinyalin gönderildiği kullanıcıları takip etmek için
 signal_chat_ids = {}  # signal_id -> [chat_ids]
-active_chat_id = None  # Son aktif chat ID’sini sakla
 
 
 def init_db():
@@ -649,12 +648,6 @@ async def send_periodic_signals(app: Application):
     while True:
         try:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Sinyal üretimi başlıyor...")
-            global active_chat_id
-            if active_chat_id is None:
-                print("Aktif bir chat ID’si bulunamadı. Lütfen botu bir chat veya grupta çalıştırın.")
-                await asyncio.sleep(7200)
-                continue
-
             top50_pairs = await get_top_50_binance_pairs()
             if not top50_pairs:
                 print("Top 50 coin alınamadı.")
@@ -674,13 +667,16 @@ async def send_periodic_signals(app: Application):
                 signal_result = generate_signal(df, symbol, timeframe)
                 if signal_result is not None:
                     message, signal_id = signal_result
-                    signal_chat_ids[signal_id] = [active_chat_id]  # Sinyali son aktif chat’e gönder
-                    try:
-                        await app.bot.send_message(chat_id=active_chat_id, text=message)
-                        print(
-                            f"Otomatik sinyal gönderildi: {active_chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                    except Exception as e:
-                        print(f"Otomatik sinyal gönderilemedi ({active_chat_id}): {e}")
+                    # Botun çalıştığı tüm chat’lere sinyal gönder
+                    async for dialog in app.bot.get_updates(timeout=10):
+                        chat_id = dialog.message.chat_id
+                        signal_chat_ids[signal_id] = [chat_id]  # Her chat’e ayrı ayrı gönder
+                        try:
+                            await app.bot.send_message(chat_id=chat_id, text=message)
+                            print(
+                                f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                        except Exception as e:
+                            print(f"Otomatik sinyal gönderilemedi ({chat_id}): {e}")
                     break
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 2 saat bekleniyor...")
             await asyncio.sleep(7200)  # 2 saat bekle
@@ -692,16 +688,14 @@ async def send_periodic_signals(app: Application):
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Bot {chat_id} chat’inde başlatıldı.")
     await update.message.reply_text('🚀 Bot aktif! Otomatik sinyaller bu chat’e gönderilecek.')
 
 
 async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Sinyal komutu {chat_id} chat’inde çalıştırıldı.")
 
     args = context.args
     coin = None
@@ -741,7 +735,7 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             signal_result = generate_signal(df, symbol, timeframe)
             if signal_result is not None:
                 message, signal_id = signal_result
-                signal_chat_ids[signal_id] = [active_chat_id]
+                signal_chat_ids[signal_id] = [chat_id]
                 await update.message.reply_text(message)
                 return
             tried_coins.add(symbol)
@@ -756,15 +750,14 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         signal_result = generate_signal(df, symbol, timeframe)
         if signal_result is not None:
             message, signal_id = signal_result
-            signal_chat_ids[signal_id] = [active_chat_id]
+            signal_chat_ids[signal_id] = [chat_id]
             await update.message.reply_text(message)
             return
 
 
 async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Favori komutu {chat_id} chat’inde çalıştırıldı.")
 
     args = context.args
     favorites = get_favorites('default')  # Basit bir favori listesi, kullanıcıya bağlı değil
@@ -790,9 +783,8 @@ async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Favorilerim komutu {chat_id} chat’inde çalıştırıldı.")
 
     favs = get_favorites('default')  # Basit bir favori listesi
     if favs:
@@ -802,11 +794,10 @@ async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Tüm çıkış komutu {chat_id} chat’inde çalıştırıldı.")
 
-    if active_chat_id is None or str(active_chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
+    if str(chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
         await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
         return
     conn = sqlite3.connect(DB_FILE)
@@ -815,15 +806,14 @@ async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.commit()
     conn.close()
     await update.message.reply_text('✅ Tüm kullanıcılar çıkış yaptı.')
-    print(f'Tüm kullanıcılar çıkış yaptı: {active_chat_id}')
+    print(f'Tüm kullanıcılar çıkış yaptı: {chat_id}')
 
 
 async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Kullanıcı çıkış komutu {chat_id} chat’inde çalıştırıldı.")
 
-    if active_chat_id is None or str(active_chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
+    if str(chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
         await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
         return
     args = context.args
@@ -840,13 +830,12 @@ async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.commit()
     conn.close()
     await update.message.reply_text(f'✅ {target_user_id} kullanıcısı çıkış yaptı.')
-    print(f'Kullanıcı çıkış yaptı: {target_user_id}, {active_chat_id}')
+    print(f'Kullanıcı çıkış yaptı: {target_user_id}, {chat_id}')
 
 
 async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Bilgi komutu {chat_id} chat’inde çalıştırıldı.")
 
     bilgi_text = (
         'ℹ️ *SmartKoinBot Hakkında Detaylı Bilgi*\n\n'
@@ -866,9 +855,8 @@ async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Help komutu {chat_id} chat’inde çalıştırıldı.")
 
     help_text = (
         '🤖 *Komutlar ve Açıklamaları:*\n\n'
@@ -880,21 +868,15 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def exit(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Exit komutu {chat_id} chat’inde çalıştırıldı.")
 
-    if active_chat_id is None:
-        await update.message.reply_text('🚫 Aktif bir chat bulunamadı.')
-        return
     await update.message.reply_text('✅ Çıkış yapıldı. Bot bu chat’ten sinyal göndermeyi durduracak.')
-    active_chat_id = None
 
 
 async def top30(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global active_chat_id
-    active_chat_id = update.message.chat_id
-    print(f"Aktif chat ID’si güncellendi: {active_chat_id}")
+    chat_id = update.message.chat_id
+    print(f"Top30 komutu {chat_id} chat’inde çalıştırıldı.")
 
     message = await get_top_30_coins()
     await update.message.reply_text(message)
