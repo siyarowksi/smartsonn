@@ -24,7 +24,6 @@ if platform.system() == "Windows":
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAEzKfKf83Lp5fdae2_PTkAw9Qo3_0bNRfw')
 CMC_API_KEY = os.getenv('CMC_API_KEY', '')
 DB_FILE = 'users.db'
-SIGNAL_LOG_DB = 'signal_log.db'
 
 # Binance ayarları
 BINANCE = ccxt_async.binance({
@@ -44,15 +43,55 @@ TICKERS_CACHE = None
 TICKERS_CACHE_TIME = None
 TICKERS_CACHE_DURATION = 120
 
-# Global değişken: Sinyalin gönderildiği kullanıcıları takip etmek için
-signal_chat_ids = {}  # signal_id -> [chat_ids]
-
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
+
+    # Users tablosunu oluştur
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (user_id TEXT PRIMARY KEY, chat_id INTEGER, created_at TEXT, favorites TEXT)''')
+
+    # Signals tablosunun varlığını ve şemasını kontrol et
+    c.execute("PRAGMA table_info(signals)")
+    columns = [col[1] for col in c.fetchall()]
+
+    expected_columns = [
+        'id', 'symbol', 'timeframe', 'signal_type', 'price', 'stop_loss', 'take_profit',
+        'atr', 'percent_sl', 'percent_tp', 'created_at', 'status', 'closed_at'
+    ]
+
+    if not columns or not all(col in columns for col in expected_columns):
+        # Signals tablosu eksik veya yanlış şemada, yeniden oluştur
+        if columns:
+            # Eski tabloyu yedekle
+            c.execute('ALTER TABLE signals RENAME TO signals_backup')
+        c.execute('''CREATE TABLE signals
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      symbol TEXT,
+                      timeframe TEXT,
+                      signal_type TEXT,
+                      price REAL,
+                      stop_loss REAL,
+                      take_profit REAL,
+                      atr REAL,
+                      percent_sl REAL,
+                      percent_tp REAL,
+                      created_at TEXT,
+                      status TEXT,
+                      closed_at TEXT)''')
+        # Eski verileri aktar (varsa)
+        if columns:
+            try:
+                common_columns = [col for col in columns if col in expected_columns and col != 'id']
+                if common_columns:
+                    c.execute(f'''INSERT INTO signals ({', '.join(common_columns)})
+                                 SELECT {', '.join(common_columns)} FROM signals_backup''')
+                c.execute('DROP TABLE signals_backup')
+            except Exception as e:
+                print(f"Eski sinyal verileri aktarılırken hata: {e}")
+
+    # Ön tanımlı kullanıcıları ekle
     predefined_users = [
         ('yetkiliadmin', None),
         ('prokullanici', None),
@@ -61,15 +100,7 @@ def init_db():
     for user_id, chat_id in predefined_users:
         c.execute('INSERT OR IGNORE INTO users (user_id, chat_id, created_at, favorites) VALUES (?, ?, ?, ?)',
                   (user_id, chat_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ''))
-    conn.commit()
-    conn.close()
 
-    # Sinyal log veritabanı
-    conn = sqlite3.connect(SIGNAL_LOG_DB)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS signal_log
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, timeframe TEXT, signal_type TEXT,
-                  price REAL, take_profit REAL, stop_loss REAL, timestamp TEXT, result TEXT)''')
     conn.commit()
     conn.close()
 
@@ -109,6 +140,15 @@ def exit_user(chat_id):
     conn.close()
 
 
+def get_authorized_users():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT user_id, chat_id FROM users WHERE chat_id IS NOT NULL')
+    results = c.fetchall()
+    conn.close()
+    return results
+
+
 def get_favorites(user_id):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -138,60 +178,6 @@ def remove_favorite(user_id, coin):
         c.execute('UPDATE users SET favorites = ? WHERE user_id = ?', (','.join(favorites), user_id))
         conn.commit()
         conn.close()
-
-
-def log_signal(symbol, timeframe, signal_type, price, take_profit, stop_loss, result=None):
-    conn = sqlite3.connect(SIGNAL_LOG_DB)
-    c = conn.cursor()
-    c.execute(
-        'INSERT INTO signal_log (symbol, timeframe, signal_type, price, take_profit, stop_loss, timestamp, result) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        (symbol, timeframe, signal_type, price, take_profit, stop_loss, datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-         result))
-    signal_id = c.lastrowid
-    conn.commit()
-    conn.close()
-    return signal_id
-
-
-def update_signal_result(signal_id, result):
-    conn = sqlite3.connect(SIGNAL_LOG_DB)
-    c = conn.cursor()
-    c.execute('UPDATE signal_log SET result = ? WHERE id = ?', (result, signal_id))
-    conn.commit()
-    conn.close()
-
-
-def get_signal_details(signal_id):
-    conn = sqlite3.connect(SIGNAL_LOG_DB)
-    c = conn.cursor()
-    c.execute('SELECT symbol, signal_type, price, take_profit, stop_loss FROM signal_log WHERE id = ?', (signal_id,))
-    result = c.fetchone()
-    conn.close()
-    return result
-
-
-def get_pending_signals():
-    conn = sqlite3.connect(SIGNAL_LOG_DB)
-    c = conn.cursor()
-    c.execute('SELECT id, symbol, signal_type, price, take_profit, stop_loss FROM signal_log WHERE result IS NULL')
-    results = c.fetchall()
-    conn.close()
-    return results
-
-
-def get_signal_performance():
-    conn = sqlite3.connect(SIGNAL_LOG_DB)
-    c = conn.cursor()
-    two_days_ago = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')
-    c.execute('SELECT result FROM signal_log WHERE timestamp >= ?', (two_days_ago,))
-    results = c.fetchall()
-    conn.close()
-
-    total_trades = len(results)
-    successful_trades = len([r for r in results if r[0] == 'successful'])
-    failed_trades = len([r for r in results if r[0] == 'failed'])
-
-    return total_trades, successful_trades, failed_trades
 
 
 async def get_top_50_binance_pairs():
@@ -264,16 +250,7 @@ async def get_price_data(symbol, timeframe='1h', limit=100):
         DATA_CACHE[cache_key] = (df, datetime.now())
         return df
     except Exception as e:
-        print(f'Veri alınamadı ({symbol}, {timeframe}): {e}')
-        return None
-
-
-async def get_current_price(symbol):
-    try:
-        ticker = await BINANCE.fetch_ticker(symbol)
-        return ticker['last']
-    except Exception as e:
-        print(f'Fiyat alınamadı ({symbol}): {e}')
+        print(f'Veri çekme hatası ({symbol}): {e}')
         return None
 
 
@@ -309,7 +286,6 @@ async def get_top_30_coins():
             return f'❌ Hata: CoinMarketCap verisi alınamadı. {str(e)}'
 
 
-# Teknik indikatörler
 def calculate_rsi(data, periods=14):
     delta = data.diff()
     gain = delta.where(delta > 0, 0).rolling(window=periods).mean()
@@ -401,231 +377,246 @@ def calculate_atr(df, periods=14):
     return atr
 
 
-def detect_price_action_patterns(df):
-    price_action_signals = {'buy': [], 'sell': []}
+def calculate_price_action(df):
+    if len(df) < 3:
+        return None
+    latest = df.iloc[-1]
+    prev = df.iloc[-2]
+    prev2 = df.iloc[-3]
 
-    for i in range(2, len(df)):
-        body = abs(df['close'].iloc[i] - df['open'].iloc[i])
-        upper_wick = df['high'].iloc[i] - max(df['open'].iloc[i], df['close'].iloc[i])
-        lower_wick = min(df['open'].iloc[i], df['close'].iloc[i]) - df['low'].iloc[i]
-        total_range = df['high'].iloc[i] - df['low'].iloc[i]
+    bullish_engulfing = (prev['close'] < prev['open'] and
+                         latest['close'] > latest['open'] and
+                         latest['close'] > prev['open'] and
+                         latest['open'] < prev['close'])
 
-        if total_range > 0:
-            if upper_wick > 2 * body and lower_wick < 0.3 * upper_wick:
-                price_action_signals['sell'].append('Pin Bar')
-            elif lower_wick > 2 * body and upper_wick < 0.3 * lower_wick:
-                price_action_signals['buy'].append('Pin Bar')
+    bearish_engulfing = (prev['close'] > prev['open'] and
+                         latest['close'] < latest['open'] and
+                         latest['close'] < prev['open'] and
+                         latest['open'] > prev['close'])
 
-    for i in range(1, len(df)):
-        if (df['high'].iloc[i] < df['high'].iloc[i - 1] and
-                df['low'].iloc[i] > df['low'].iloc[i - 1]):
-            if df['close'].iloc[i] > df['open'].iloc[i]:
-                price_action_signals['buy'].append('Inside Bar')
-            else:
-                price_action_signals['sell'].append('Inside Bar')
+    return 'bullish' if bullish_engulfing else 'bearish' if bearish_engulfing else None
 
-    for i in range(1, len(df)):
-        if df['close'].iloc[i - 1] > df['open'].iloc[i - 1]:  # Önceki mum yükseliş
-            if (df['close'].iloc[i] < df['open'].iloc[i] and
-                    df['open'].iloc[i] > df['close'].iloc[i - 1] and
-                    df['close'].iloc[i] < df['open'].iloc[i - 1]):
-                price_action_signals['sell'].append('Bearish Engulfing')
-        elif df['close'].iloc[i - 1] < df['open'].iloc[i - 1]:  # Önceki mum düşüş
-            if (df['close'].iloc[i] > df['open'].iloc[i] and
-                    df['open'].iloc[i] < df['close'].iloc[i - 1] and
-                    df['close'].iloc[i] > df['open'].iloc[i - 1]):
-                price_action_signals['buy'].append('Bullish Engulfing')
 
-    return price_action_signals
+def save_signal(symbol, timeframe, signal_type, price, stop_loss, take_profit, atr, percent_sl, percent_tp):
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('''INSERT INTO signals (symbol, timeframe, signal_type, price, stop_loss, take_profit, atr, 
+                     percent_sl, percent_tp, created_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                  (symbol, timeframe, signal_type, price, stop_loss, take_profit, atr,
+                   percent_sl, percent_tp, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'open'))
+        conn.commit()
+    except Exception as e:
+        print(f"Sinyal kaydetme hatası: {e}")
+    finally:
+        conn.close()
+
+
+def update_signal_status(signal_id, status, closed_at):
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('UPDATE signals SET status = ?, closed_at = ? WHERE id = ?',
+                  (status, closed_at, signal_id))
+        conn.commit()
+    except Exception as e:
+        print(f"Sinyal güncelleme hatası: {e}")
+    finally:
+        conn.close()
+
+
+async def monitor_signals():
+    while True:
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute(
+                "SELECT id, symbol, timeframe, signal_type, price, stop_loss, take_profit FROM signals WHERE status = 'open'")
+            open_signals = c.fetchall()
+            conn.close()
+
+            for signal in open_signals:
+                signal_id, symbol, timeframe, signal_type, entry_price, stop_loss, take_profit = signal
+                df = await get_price_data(symbol, timeframe, limit=10)
+                if df is None:
+                    continue
+                latest_price = df['close'].iloc[-1]
+
+                if signal_type == 'Uzun':
+                    if latest_price >= take_profit:
+                        update_signal_status(signal_id, 'hit_tp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    elif latest_price <= stop_loss:
+                        update_signal_status(signal_id, 'hit_sl', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                else:  # Kısa
+                    if latest_price <= take_profit:
+                        update_signal_status(signal_id, 'hit_tp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    elif latest_price >= stop_loss:
+                        update_signal_status(signal_id, 'hit_sl', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+            await asyncio.sleep(300)  # Her 5 dakikada bir kontrol
+        except sqlite3.OperationalError as e:
+            print(f"Veritabanı hatası (monitor_signals): {e}")
+            await asyncio.sleep(300)
+        except Exception as e:
+            print(f"Sinyal izleme hatası: {e}")
+            await asyncio.sleep(300)
+
+
+def get_signal_stats():
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        forty_eight_hours_ago = (datetime.now() - timedelta(hours=48)).strftime('%Y-%m-%d %H:%M:%S')
+        c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ?", (forty_eight_hours_ago,))
+        total_signals = c.fetchone()[0]
+        c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ? AND status = 'hit_tp'", (forty_eight_hours_ago,))
+        successful_signals = c.fetchone()[0]
+        c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ? AND status = 'hit_sl'", (forty_eight_hours_ago,))
+        failed_signals = c.fetchone()[0]
+        conn.close()
+        return total_signals, successful_signals, failed_signals
+    except Exception as e:
+        print(f"Sinyal istatistikleri hatası: {e}")
+        return 0, 0, 0
 
 
 def generate_signal(df, symbol, timeframe):
-    if df is None or len(df) < 50 or not all(col in df.columns for col in ['open', 'high', 'low', 'close', 'volume']):
+    try:
+        if df is None or len(df) < 50 or not all(
+                col in df.columns for col in ['open', 'high', 'low', 'close', 'volume']):
+            return None
+
+        df['rsi'] = calculate_rsi(df['close'])
+        df['macd'], df['macd_signal'] = calculate_macd(df['close'])
+        df['sma'], df['bb_upper'], df['bb_lower'] = calculate_bollinger_bands(df['close'])
+        df['ema'] = calculate_ema(df['close'])
+        df['stoch_k'], df['stoch_d'] = calculate_stochastic(df['high'], df['low'], df['close'])
+        df['adx'], df['di_plus'], df['di_minus'] = calculate_adx(df['high'], df['low'], df['close'])
+        df['cci'] = calculate_cci(df['high'], df['low'], df['close'])
+        df['williams_r'] = calculate_williams_r(df['high'], df['low'], df['close'])
+        df['mfi'] = calculate_mfi(df['high'], df['low'], df['close'], df['volume'])
+        df['atr'] = calculate_atr(df)
+
+        pa_signal = calculate_price_action(df)
+
+        if df[['rsi', 'macd', 'bb_upper', 'bb_lower', 'atr']].iloc[-1].isna().any():
+            return None
+
+        latest_rsi = df['rsi'].iloc[-1]
+        latest_macd = df['macd'].iloc[-1]
+        latest_macd_signal = df['macd_signal'].iloc[-1]
+        latest_price = df['close'].iloc[-1]
+        latest_bb_upper = df['bb_upper'].iloc[-1]
+        latest_bb_lower = df['bb_lower'].iloc[-1]
+        latest_sma = df['sma'].iloc[-1]
+        latest_ema = df['ema'].iloc[-1]
+        latest_stoch_k = df['stoch_k'].iloc[-1]
+        latest_stoch_d = df['stoch_d'].iloc[-1]
+        latest_adx = df['adx'].iloc[-1]
+        latest_di_plus = df['di_plus'].iloc[-1]
+        latest_di_minus = df['di_minus'].iloc[-1]
+        latest_cci = df['cci'].iloc[-1]
+        latest_williams_r = df['williams_r'].iloc[-1]
+        latest_mfi = df['mfi'].iloc[-1]
+        latest_atr = df['atr'].iloc[-1]
+
+        buy_signals = []
+        sell_signals = []
+
+        if latest_rsi < 30:
+            buy_signals.append('RSI')
+        elif latest_rsi > 70:
+            sell_signals.append('RSI')
+
+        if latest_macd > latest_macd_signal and df['macd'].iloc[-2] <= df['macd_signal'].iloc[-2]:
+            buy_signals.append('MACD')
+        elif latest_macd < latest_macd_signal and df['macd'].iloc[-2] >= df['macd_signal'].iloc[-2]:
+            sell_signals.append('MACD')
+
+        if latest_price < latest_bb_lower:
+            buy_signals.append('Bollinger')
+        elif latest_price > latest_bb_upper:
+            sell_signals.append('Bollinger')
+
+        if latest_price > latest_sma and df['close'].iloc[-2] <= df['sma'].iloc[-2]:
+            buy_signals.append('SMA')
+        elif latest_price < latest_sma and df['close'].iloc[-2] >= df['sma'].iloc[-2]:
+            sell_signals.append('SMA')
+
+        if latest_price > latest_ema and df['close'].iloc[-2] <= df['ema'].iloc[-2]:
+            buy_signals.append('EMA')
+        elif latest_price < latest_ema and df['close'].iloc[-2] >= df['ema'].iloc[-2]:
+            sell_signals.append('EMA')
+
+        if latest_stoch_k < 20 and latest_stoch_k > latest_stoch_d:
+            buy_signals.append('Stochastic')
+        elif latest_stoch_k > 80 and latest_stoch_k < latest_stoch_d:
+            sell_signals.append('Stochastic')
+
+        if latest_adx > 25 and latest_di_plus > latest_di_minus:
+            buy_signals.append('ADX')
+        elif latest_adx > 25 and latest_di_minus > latest_di_plus:
+            sell_signals.append('ADX')
+
+        if latest_cci < -100:
+            buy_signals.append('CCI')
+        elif latest_cci > 100:
+            sell_signals.append('CCI')
+
+        if latest_williams_r < -80:
+            buy_signals.append('Williams %R')
+        elif latest_williams_r > -20:
+            sell_signals.append('Williams %R')
+
+        if latest_mfi < 20:
+            buy_signals.append('MFI')
+        elif latest_mfi > 80:
+            sell_signals.append('MFI')
+
+        if pa_signal == 'bullish':
+            buy_signals.append('Price Action')
+        elif pa_signal == 'bearish':
+            sell_signals.append('Price Action')
+
+        buy_count = len(buy_signals)
+        sell_count = len(sell_signals)
+        if buy_count > sell_count and buy_count > 0:
+            signal_type = 'Uzun'
+            signal_emoji = '🟢'
+            atr_stop_loss = latest_price - (2 * latest_atr)
+            atr_take_profit = latest_price + (4 * latest_atr)
+            percent_sl = latest_price * (1 - random.uniform(0.0003, 0.0005))
+            percent_tp = latest_price * (1 + random.uniform(0.0003, 0.0005) * 2)
+            rr = (atr_take_profit - latest_price) / (
+                        latest_price - atr_stop_loss) if latest_price != atr_stop_loss else 0
+        elif sell_count > buy_count and sell_count > 0:
+            signal_type = 'Kısa'
+            signal_emoji = '🔴'
+            atr_stop_loss = latest_price + (2 * latest_atr)
+            atr_take_profit = latest_price - (4 * latest_atr)
+            percent_sl = latest_price * (1 + random.uniform(0.0003, 0.0005))
+            percent_tp = latest_price * (1 - random.uniform(0.0003, 0.0005) * 2)
+            rr = (latest_price - atr_take_profit) / (
+                        atr_stop_loss - latest_price) if atr_stop_loss != latest_price else 0
+        else:
+            return None
+
+        message = (
+            f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
+            f'🕒 Zaman Dilimi: {timeframe}\n'
+            f'💵 Fiyat: {latest_price:.7f} USDT\n'
+            f'🎯 Kâr Al: {atr_take_profit:.7f} USDT\n'
+            f'🛡️ Zarar Durdur: {atr_stop_loss:.7f} USDT\n'
+            f'📊 Risk-Ödül Oranı: {rr:.2f}'
+        )
+
+        save_signal(symbol, timeframe, signal_type, latest_price, atr_stop_loss, atr_take_profit,
+                    latest_atr, percent_sl, percent_tp)
+
+        return message
+    except Exception as e:
+        print(f"Sinyal oluşturma hatası: {e}")
         return None
-
-    df['rsi'] = calculate_rsi(df['close'])
-    df['macd'], df['macd_signal'] = calculate_macd(df['close'])
-    df['sma'], df['bb_upper'], df['bb_lower'] = calculate_bollinger_bands(df['close'])
-    df['ema'] = calculate_ema(df['close'])
-    df['stoch_k'], df['stoch_d'] = calculate_stochastic(df['high'], df['low'], df['close'])
-    df['adx'], df['di_plus'], df['di_minus'] = calculate_adx(df['high'], df['low'], df['close'])
-    df['cci'] = calculate_cci(df['high'], df['low'], df['close'])
-    df['williams_r'] = calculate_williams_r(df['high'], df['low'], df['close'])
-    df['mfi'] = calculate_mfi(df['high'], df['low'], df['close'], df['volume'])
-    df['atr'] = calculate_atr(df)
-
-    price_action_signals = detect_price_action_patterns(df)
-
-    if df[['rsi', 'macd', 'bb_upper', 'bb_lower', 'atr']].iloc[-1].isna().any():
-        return None
-
-    latest_rsi = df['rsi'].iloc[-1]
-    latest_macd = df['macd'].iloc[-1]
-    latest_macd_signal = df['macd_signal'].iloc[-1]
-    latest_price = df['close'].iloc[-1]
-    latest_bb_upper = df['bb_upper'].iloc[-1]
-    latest_bb_lower = df['bb_lower'].iloc[-1]
-    latest_sma = df['sma'].iloc[-1]
-    latest_ema = df['ema'].iloc[-1]
-    latest_stoch_k = df['stoch_k'].iloc[-1]
-    latest_stoch_d = df['stoch_d'].iloc[-1]
-    latest_adx = df['adx'].iloc[-1]
-    latest_di_plus = df['di_plus'].iloc[-1]
-    latest_di_minus = df['di_minus'].iloc[-1]
-    latest_cci = df['cci'].iloc[-1]
-    latest_williams_r = df['williams_r'].iloc[-1]
-    latest_mfi = df['mfi'].iloc[-1]
-    latest_atr = df['atr'].iloc[-1]
-
-    buy_signals = []
-    sell_signals = []
-
-    if latest_rsi < 30:
-        buy_signals.append('RSI')
-    elif latest_rsi > 70:
-        sell_signals.append('RSI')
-
-    if latest_macd > latest_macd_signal and df['macd'].iloc[-2] <= df['macd_signal'].iloc[-2]:
-        buy_signals.append('MACD')
-    elif latest_macd < latest_macd_signal and df['macd'].iloc[-2] >= df['macd_signal'].iloc[-2]:
-        sell_signals.append('MACD')
-
-    if latest_price < latest_bb_lower:
-        buy_signals.append('Bollinger')
-    elif latest_price > latest_bb_upper:
-        sell_signals.append('Bollinger')
-
-    if latest_price > latest_sma and df['close'].iloc[-2] <= df['sma'].iloc[-2]:
-        buy_signals.append('SMA')
-    elif latest_price < latest_sma and df['close'].iloc[-2] >= df['sma'].iloc[-2]:
-        sell_signals.append('SMA')
-
-    if latest_price > latest_ema and df['close'].iloc[-2] <= df['ema'].iloc[-2]:
-        buy_signals.append('EMA')
-    elif latest_price < latest_ema and df['close'].iloc[-2] >= df['ema'].iloc[-2]:
-        sell_signals.append('EMA')
-
-    if latest_stoch_k < 20 and latest_stoch_k > latest_stoch_d:
-        buy_signals.append('Stochastic')
-    elif latest_stoch_k > 80 and latest_stoch_k < latest_stoch_d:
-        sell_signals.append('Stochastic')
-
-    if latest_adx > 25 and latest_di_plus > latest_di_minus:
-        buy_signals.append('ADX')
-    elif latest_adx > 25 and latest_di_minus > latest_di_plus:
-        sell_signals.append('ADX')
-
-    if latest_cci < -100:
-        buy_signals.append('CCI')
-    elif latest_cci > 100:
-        sell_signals.append('CCI')
-
-    if latest_williams_r < -80:
-        buy_signals.append('Williams %R')
-    elif latest_williams_r > -20:
-        sell_signals.append('Williams %R')
-
-    if latest_mfi < 20:
-        buy_signals.append('MFI')
-    elif latest_mfi > 80:
-        sell_signals.append('MFI')
-
-    buy_signals.extend(price_action_signals['buy'])
-    sell_signals.extend(price_action_signals['sell'])
-
-    buy_count = len(buy_signals)
-    sell_count = len(sell_signals)
-
-    if buy_count > sell_count and buy_count > 0:
-        signal_type = 'Uzun'
-        signal_emoji = '🟢'
-        stop_loss = latest_price - (2 * latest_atr)
-        take_profit = latest_price + (4 * latest_atr)
-        rr = (take_profit - latest_price) / (latest_price - stop_loss) if latest_price != stop_loss else 0
-    elif sell_count > buy_count and sell_count > 0:
-        signal_type = 'Kısa'
-        signal_emoji = '🔴'
-        stop_loss = latest_price + (2 * latest_atr)
-        take_profit = latest_price - (4 * latest_atr)
-        rr = (latest_price - take_profit) / (stop_loss - latest_price) if stop_loss != latest_price else 0
-    else:
-        return None
-
-    message = (
-        f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
-        f'🕒 Zaman Dilimi: {timeframe}\n'
-        f'💵 Fiyat: {latest_price:.7f} USDT\n'
-        f'🎯 Kâr Al: {take_profit:.7f} USDT\n'
-        f'🛡️ Zarar Durdur: {stop_loss:.7f} USDT\n'
-        f'📊 Risk-Ödül Oranı: {rr:.2f}'
-    )
-
-    signal_id = log_signal(symbol, timeframe, signal_type, latest_price, take_profit, stop_loss)
-    return message, signal_id
-
-
-async def notify_signal_result(app, signal_id, result, current_price):
-    if signal_id not in signal_chat_ids:
-        return
-    chat_ids = signal_chat_ids[signal_id]
-    signal_details = get_signal_details(signal_id)
-    if not signal_details:
-        return
-    symbol, signal_type, entry_price, take_profit, stop_loss = signal_details
-    result_emoji = '✅' if result == 'successful' else '❌'
-    target_reached = 'Kâr Al' if result == 'successful' else 'Zarar Durdur'
-    message = (
-        f'{result_emoji} Sinyal Sonucu | #{symbol.replace("/", "")}\n'
-        f'📈 Tür: {signal_type}\n'
-        f'💵 Giriş Fiyatı: {entry_price:.7f} USDT\n'
-        f'🎯 {target_reached}: {current_price:.7f} USDT\n'
-        f'🕒 Zaman: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
-    )
-    for chat_id in chat_ids:
-        try:
-            await app.bot.send_message(chat_id=chat_id, text=message)
-            print(f"Sonuç bildirimi gönderildi: {chat_id}, {symbol}, Sonuç: {result}")
-        except Exception as e:
-            print(f"Sonuç bildirimi gönderilemedi ({chat_id}): {e}")
-
-
-async def monitor_signal(app, signal_id, symbol, signal_type, price, take_profit, stop_loss):
-    while True:
-        current_price = await get_current_price(symbol)
-        if current_price is None:
-            await asyncio.sleep(60)
-            continue
-
-        result = None
-        if signal_type == 'Uzun':
-            if current_price >= take_profit:
-                result = 'successful'
-            elif current_price <= stop_loss:
-                result = 'failed'
-        elif signal_type == 'Kısa':
-            if current_price <= take_profit:
-                result = 'successful'
-            elif current_price >= stop_loss:
-                result = 'failed'
-
-        if result:
-            update_signal_result(signal_id, result)
-            print(f"Sinyal sonucu güncellendi: {signal_id}, {symbol}, Sonuç: {result}")
-            await notify_signal_result(app, signal_id, result, current_price)
-            # Bildirimden sonra chat_ids listesinden kaldır
-            if signal_id in signal_chat_ids:
-                del signal_chat_ids[signal_id]
-            break
-
-        await asyncio.sleep(60)  # Her 60 saniyede bir kontrol et
-
-
-async def monitor_signals(app):
-    while True:
-        pending_signals = get_pending_signals()
-        for signal_id, symbol, signal_type, price, take_profit, stop_loss in pending_signals:
-            asyncio.create_task(monitor_signal(app, signal_id, symbol, signal_type, price, take_profit, stop_loss))
-        await asyncio.sleep(300)  # Her 5 dakikada bir yeni sinyalleri kontrol et
 
 
 async def test_binance_connection():
@@ -644,10 +635,14 @@ async def test_binance_connection():
 
 
 async def send_periodic_signals(app: Application):
-    print("Otomatik sinyal döngüsü başlatıldı.")
     while True:
         try:
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Sinyal üretimi başlıyor...")
+            authorized_users = get_authorized_users()
+            if not authorized_users:
+                print("Hiçbir yetkili kullanıcı bulunamadı.")
+                await asyncio.sleep(7200)  # 2 saat
+                continue
+
             top50_pairs = await get_top_50_binance_pairs()
             if not top50_pairs:
                 print("Top 50 coin alınamadı.")
@@ -664,117 +659,165 @@ async def send_periodic_signals(app: Application):
                 symbol = random.choice(available_coins)
                 tried_coins.add(symbol)
                 df = await get_price_data(symbol, timeframe)
-                signal_result = generate_signal(df, symbol, timeframe)
-                if signal_result is not None:
-                    message, signal_id = signal_result
-                    # Son komutun geldiği chat’e sinyal gönder
-                    updates = await app.bot.get_updates(timeout=10)
-                    if updates:
-                        for update in updates:
-                            if hasattr(update, 'message') and update.message.chat_id:
-                                chat_id = update.message.chat_id
-                                signal_chat_ids[signal_id] = [chat_id]
-                                try:
-                                    await app.bot.send_message(chat_id=chat_id, text=message)
-                                    print(
-                                        f"Otomatik sinyal gönderildi: {chat_id}, {symbol}, Zaman: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                                except Exception as e:
-                                    print(f"Otomatik sinyal gönderilemedi ({chat_id}): {e}")
+                message = generate_signal(df, symbol, timeframe)
+                if message:
+                    for _, chat_id in authorized_users:
+                        try:
+                            await app.bot.send_message(chat_id=chat_id, text=message)
+                            print(f"Sinyal gönderildi: {chat_id}, {symbol}")
+                        except Exception as e:
+                            print(f"Sinyal gönderilemedi ({chat_id}): {e}")
                     break
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 2 saat bekleniyor...")
-            await asyncio.sleep(7200)  # 2 saat bekle
+            print(f"2 saat bekleniyor... ({datetime.now()})")
+            await asyncio.sleep(7200)  # 2 saat
         except Exception as e:
-            print(f"Otomatik sinyal hatası: {e}")
-            traceback.print_exc()
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Hata sonrası 2 saat bekleniyor...")
+            print(f"Periyodik sinyal hatası: {e}")
             await asyncio.sleep(7200)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Bot {chat_id} chat’inde başlatıldı.")
-    await update.message.reply_text('🚀 Bot aktif! Otomatik sinyaller bu chat’e gönderilecek.')
+    args = context.args
+    if not args:
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        return
+    user_id = args[0]
+    result = check_user(user_id)
+    if result:
+        saved_chat_id = result[0]
+        if saved_chat_id is None:
+            save_user(user_id, chat_id)
+            await update.message.reply_text(
+                f'🚀 Yetki alındı! Kullanıcı ID: {user_id}\n📡 Sinyal almak için /sinyal yaz.'
+            )
+        elif saved_chat_id == chat_id:
+            await update.message.reply_text(
+                f'🚀 Zaten yetkiniz var! Kullanıcı ID: {user_id}\n📡 Sinyal almak için /sinyal yaz.'
+            )
+        else:
+            await update.message.reply_text(
+                f'🚫 Bu kullanıcı ID ({user_id}) başka bir hesaba kayıtlı!'
+            )
+    else:
+        await update.message.reply_text('🚫 Geçersiz ID! Lütfen doğru ID ile tekrar deneyin.')
 
 
 async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Sinyal komutu {chat_id} chat’inde çalıştırıldı.")
+    if not check_chat_id(chat_id):
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        return
 
-    args = context.args
-    coin = None
-    timeframe = random.choice(VALID_TIMEFRAMES)
+    try:
+        args = context.args
+        coin = None
+        timeframe = random.choice(VALID_TIMEFRAMES)
 
-    if args:
-        if len(args) == 1:
-            if args[0] in ['1', '2', '4', '6']:
-                timeframe = f'{args[0]}h'
-            else:
+        if args:
+            if len(args) == 1:
+                if args[0] in ['1', '2', '4', '6']:
+                    timeframe = f'{args[0]}h'
+                else:
+                    coin = args[0].upper()
+            elif len(args) == 2:
                 coin = args[0].upper()
-        elif len(args) == 2:
-            coin = args[0].upper()
-            if args[1] in ['1', '2', '4', '6']:
-                timeframe = f'{args[1]}h'
+                if args[1] in ['1', '2', '4', '6']:
+                    timeframe = f'{args[1]}h'
+                else:
+                    await update.message.reply_text('❌ Geçersiz zaman dilimi! (1, 2, 4, 6 kullanın)')
+                    return
+
+        usdt_pairs = await get_usdt_pairs()
+        if not usdt_pairs:
+            await update.message.reply_text('❌ USDT çiftleri alınamadı!')
+            return
+
+        top50_pairs = await get_top_50_binance_pairs()
+        if not top50_pairs:
+            await update.message.reply_text('❌ Binance top 50 coinler alınamadı!')
+            return
+
+        tried_coins = set()
+        if coin:
+            symbol = f'{coin}/USDT'
+            if symbol not in usdt_pairs:
+                symbol = None
             else:
-                await update.message.reply_text('❌ Geçersiz zaman dilimi! (1, 2, 4, 6 kullanın)')
+                df = await get_price_data(symbol, timeframe)
+                message = generate_signal(df, symbol, timeframe)
+                if message:
+                    await update.message.reply_text(message)
+                    return
+                tried_coins.add(symbol)
+        while True:
+            available_coins = [coin for coin in top50_pairs if coin not in tried_coins]
+            if not available_coins:
+                await update.message.reply_text('❌ Tüm coin’ler denendi, sinyal üretilemedi!')
                 return
-
-    usdt_pairs = await get_usdt_pairs()
-    if not usdt_pairs:
-        await update.message.reply_text('❌ USDT çiftleri alınamadı!')
-        return
-
-    top50_pairs = await get_top_50_binance_pairs()
-    if not top50_pairs:
-        await update.message.reply_text('❌ Binance top 50 coinler alınamadı!')
-        return
-
-    tried_coins = set()
-    if coin:
-        symbol = f'{coin}/USDT'
-        if symbol not in usdt_pairs:
-            symbol = None
-        else:
+            symbol = random.choice(available_coins)
+            tried_coins.add(symbol)
             df = await get_price_data(symbol, timeframe)
-            signal_result = generate_signal(df, symbol, timeframe)
-            if signal_result is not None:
-                message, signal_id = signal_result
-                signal_chat_ids[signal_id] = [chat_id]
+            message = generate_signal(df, symbol, timeframe)
+            if message:
                 await update.message.reply_text(message)
                 return
-            tried_coins.add(symbol)
-    while True:
-        available_coins = [coin for coin in top50_pairs if coin not in tried_coins]
-        if not available_coins:
-            await update.message.reply_text('❌ Tüm coin’ler denendi, sinyal üretilemedi!')
-            return
-        symbol = random.choice(available_coins)
-        tried_coins.add(symbol)
-        df = await get_price_data(symbol, timeframe)
-        signal_result = generate_signal(df, symbol, timeframe)
-        if signal_result is not None:
-            message, signal_id = signal_result
-            signal_chat_ids[signal_id] = [chat_id]
-            await update.message.reply_text(message)
-            return
+    except Exception as e:
+        print(f"Sinyal komutu hatası: {e}")
+        await update.message.reply_text('❌ Sinyal oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.')
+
+
+async def signal_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+    user = check_chat_id(chat_id)
+    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
+        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
+        return
+    total, successful, failed = get_signal_stats()
+    message = (
+        f'📊 Son 48 Saat Sinyal İstatistikleri:\n'
+        f'🔢 Toplam Sinyal: {total}\n'
+        f'✅ Başarılı (TP): {successful}\n'
+        f'❌ Başarısız (SL): {failed}'
+    )
+    await update.message.reply_text(message)
+
+
+async def active_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+    user = check_chat_id(chat_id)
+    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
+        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
+        return
+    users = get_authorized_users()
+    if not users:
+        await update.message.reply_text('📋 Aktif kullanıcı bulunamadı.')
+        return
+    message = '📋 Aktif Kullanıcılar:\n\n'
+    for user_id, chat_id in users:
+        message += f'👤 Kullanıcı ID: {user_id}, Chat ID: {chat_id}\n'
+    await update.message.reply_text(message)
 
 
 async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Favori komutu {chat_id} chat’inde çalıştırıldı.")
-
+    user = check_chat_id(chat_id)
+    if not user:
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        return
+    user_id = user[0]
     args = context.args
-    favorites = get_favorites('default')  # Basit bir favori listesi, kullanıcıya bağlı değil
+    favorites = get_favorites(user_id)
     if args:
         action = args[0].lower()
         if action == 'ekle' and len(args) > 1:
             coin = args[1].upper()
-            add_favorite('default', coin)
-            await update.message.reply_text(f'✅ {coin} favorilere eklendi.')
+            add_favorite(user_id, coin)
+            await update.message.reply_text(f'✅ {coin} favorilerinize eklendi.')
             return
         elif action == 'sil' and len(args) > 1:
             coin = args[1].upper()
-            remove_favorite('default', coin)
-            await update.message.reply_text(f'❌ {coin} favorilerden silindi.')
+            remove_favorite(user_id, coin)
+            await update.message.reply_text(f'❌ {coin} favorilerinizden silindi.')
             return
         else:
             await update.message.reply_text('Kullanım: /favori ekle BTC veya /favori sil ETH')
@@ -782,26 +825,28 @@ async def favori(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not favorites:
         await update.message.reply_text('⭐ Henüz favori coin eklemediniz. /favori ekle BTC gibi ekleyebilirsiniz.')
         return
-    await update.message.reply_text('⭐ Favori coinler: ' + ', '.join(favorites))
+    await update.message.reply_text('⭐ Favori coinleriniz: ' + ', '.join(favorites))
 
 
 async def favorilerim(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Favorilerim komutu {chat_id} chat’inde çalıştırıldı.")
-
-    favs = get_favorites('default')  # Basit bir favori listesi
+    user = check_chat_id(chat_id)
+    if not user:
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        return
+    user_id = user[0]
+    favs = get_favorites(user_id)
     if favs:
-        await update.message.reply_text('⭐ Favori coinler: ' + ', '.join(favs))
+        await update.message.reply_text('⭐ Favori coinleriniz: ' + ', '.join(favs))
     else:
         await update.message.reply_text('⭐ Henüz favori coin eklemediniz.')
 
 
 async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Tüm çıkış komutu {chat_id} chat’inde çalıştırıldı.")
-
-    if str(chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
-        await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
+    user = check_chat_id(chat_id)
+    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
+        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
         return
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -814,10 +859,9 @@ async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Kullanıcı çıkış komutu {chat_id} chat’inde çalıştırıldı.")
-
-    if str(chat_id) != '-1002664325731':  # Sadece yetkiliadmin grubundan çalışsın
-        await update.message.reply_text('🚫 Bu komutu sadece yetkiliadmin çalıştırabilir!')
+    user = check_chat_id(chat_id)
+    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
+        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
         return
     args = context.args
     if not args:
@@ -825,7 +869,7 @@ async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     target_user_id = args[0]
     if not check_user(target_user_id):
-        await update.message.reply_text(f'❌ Kullanıcı ID bulunamadı!')
+        await update.message.reply_text(f'❌ Kullanıcı ID {target_user_id} bulunamadı!')
         return
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -837,50 +881,52 @@ async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    print(f"Bilgi komutu {chat_id} chat’inde çalıştırıldı.")
-
     bilgi_text = (
-        'ℹ️ *SmartKoinBot Hakkında Detaylı Bilgi*\n\n'
-        'SmartKoinBot, Binance spot piyasasındaki USDT pariteleri için teknik analiz tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
+        'ℹ️ *Finetic Trade Hakkında Detaylı Bilgi*\n\n'
+        'Finetic Trade, Binance spot piyasasındaki USDT pariteleri için teknik analiz ve price action tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
         '*Özellikler:*\n'
-        '- Gerçek zamanlı teknik analiz (RSI, MACD, Bollinger, vb.)\n'
-        '- Otomatik sinyal gönderimi (aktif chat’e)\n'
+        '- Gerçek zamanlı teknik analiz (RSI, MACD, Bollinger, EMA, vb.) ve Price Action\n'
+        '- ATR ve % bazlı sinyaller\n'
+        '- Sinyal istatistikleri ve aktif kullanıcı listesi\n'
+        '- Kullanıcıya özel yetkilendirme ve güvenlik\n'
         '- Gelişmiş /help ve /bilgi menüleri\n'
-        '- (Yakında) Sinyal geçmişi, premium sistem, alarm ve daha fazlası!\n\n'
         '*Kullanım için örnekler:*\n'
+        '- /start id adresiniz\n'
         '- /sinyal BTC 1\n'
         '- /sinyal\n'
+        '- /signalstats\n'
         'Her türlü soru ve destek için: @finetictradee veya finetictrade@gmail.com\n'
         'Gizlilik: Kullanıcı verileriniz üçüncü kişilerle paylaşılmaz.'
     )
     await update.message.reply_text(bilgi_text, parse_mode='Markdown')
 
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    print(f"Help komutu {chat_id} chat’inde çalıştırıldı.")
-
+async def help_command(update: Update, context: ContextTypes):
     help_text = (
-        '🤖 *Komutlar ve Açıklamaları:*\n\n'
-        '/sinyal [COIN] [1|2|4|6] - Rasgele veya Saatlik sinyaller alırsın. (Örnek: /sinyal BTC 1 veya /sinyal)\n'
-        '/help - Bu yardım menüsünü gösterir.\n'
-        '/bilgi - Botun detaylı açıklaması ve kullanım rehberi.\n'
+        "🤖 *Komutlar ve Açıklamaları*:\n\n"
+        "\\/sinyal \\[COIN\\] \\[1\\|2\\|4\\|6\\] \\- Rasgele veya saatlik sinyaller alırsın\\. Örnek: \\/sinyal BTC 1 veya \\/sinyal\n"
+        "\\/signalstats \\- Son 48 saat sinyal istatistiklerini gösterir\\.\n"
+        "\\/help \\- Bu yardım menüsünü gösterir\\.\n"
+        "\\/bilgi \\- Botun detaylı açıklaması ve kullanım rehberi\\.\n"
     )
-    await update.message.reply_text(help_text, parse_mode='Markdown')
+    await update.message.reply_text(help_text, parse_mode='MarkdownV2')
 
 
 async def exit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Exit komutu {chat_id} chat’inde çalıştırıldı.")
-
-    await update.message.reply_text('✅ Çıkış yapıldı. Bot bu chat’ten sinyal göndermeyi durduracak.')
+    result = check_chat_id(chat_id)
+    if not result:
+        await update.message.reply_text('🚫 Yetkisiz erişim! Önce /start id ile yetki almalısınız.')
+        return
+    exit_user(chat_id)
+    await update.message.reply_text('✅ Başarıyla çıkış yaptınız. Tekrar giriş için /start id kullanabilirsiniz.')
 
 
 async def top30(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    print(f"Top30 komutu {chat_id} chat’inde çalıştırıldı.")
-
+    if not check_chat_id(chat_id):
+        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+        return
     message = await get_top_30_coins()
     await update.message.reply_text(message)
 
@@ -918,14 +964,14 @@ def main():
         app.add_handler(CommandHandler('help', help_command))
         app.add_handler(CommandHandler('tumcikis', tum_cikis))
         app.add_handler(CommandHandler('kullanicicikis', kullanici_cikis))
+        app.add_handler(CommandHandler('signalstats', signal_stats))
+        app.add_handler(CommandHandler('activeusers', active_users))
         loop.create_task(send_periodic_signals(app))
-        loop.create_task(monitor_signals(app))
+        loop.create_task(monitor_signals())
         print('Bot başlatılıyor...')
         loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
     except KeyboardInterrupt:
-        print('Bot manuel olarak durduruldu...')
-        if app:
-            loop.run_until_complete(shutdown(app, BINANCE))
+        print('Bot durduruluyor...')
     except Exception as e:
         print(f'Hata: {e}')
         traceback.print_exc()
@@ -935,12 +981,13 @@ def main():
         if not loop.is_closed():
             pending = asyncio.all_tasks(loop)
             for task in pending:
-                if not task.done():
-                    task.cancel()
-            loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-            loop.run_until_complete(loop.shutdown_asyncgens())
-            loop.run_until_complete(loop.shutdown_default_executor())
-        loop.close()
+                task.cancel()
+            try:
+                loop.run_until_complete(loop.shutdown_asyncgens())
+                loop.run_until_complete(loop.shutdown_default_executor())
+            except asyncio.CancelledError:
+                pass
+            loop.close()
         print("Olay döngüsü kapatıldı.")
 
 
