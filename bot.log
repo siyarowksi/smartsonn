@@ -1,0 +1,15 @@
+2025-06-24 00:32:21,246 - INFO - Binance API baðlantýsý baþarýlý (ping)
+2025-06-24 00:32:37,181 - INFO - Binance API ile veri çekme baþarýlý
+2025-06-24 00:32:38,404 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/getMe "HTTP/1.1 200 OK"
+2025-06-24 00:32:38,458 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/deleteWebhook "HTTP/1.1 200 OK"
+2025-06-24 00:32:38,464 - INFO - Scheduler started
+2025-06-24 00:32:38,464 - INFO - Application started
+2025-06-24 00:32:48,745 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/getUpdates "HTTP/1.1 200 OK"
+2025-06-24 00:32:58,802 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/getUpdates "HTTP/1.1 200 OK"
+2025-06-24 00:33:00,711 - INFO - Top 20 pairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'XRP/USDT', 'PEPE/USDT', 'SUI/USDT', 'DOGE/USDT', 'TRX/USDT', 'BNB/USDT', 'FUN/USDT', 'ADA/USDT', 'UNI/USDT', 'AAVE/USDT', 'SEI/USDT', 'EUR/USDT', 'WIF/USDT', 'AVAX/USDT', 'TRUMP/USDT', 'VIRTUAL/USDT', 'MOVE/USDT']
+2025-06-24 00:33:08,901 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/getUpdates "HTTP/1.1 200 OK"
+2025-06-24 00:33:18,969 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/getUpdates "HTTP/1.1 200 OK"
+2025-06-24 00:33:21,142 - WARNING - Yetersiz zaman dilimi verisi: EUR/USDT
+2025-06-24 00:33:25,921 - WARNING - Yetersiz zaman dilimi verisi: AAVE/USDT
+2025-06-24 00:33:29,049 - INFO - HTTP Request: POST https://api.telegram.org/bot8047440107:AAHGwQ9AiObX6tnCEFHrBPL-8ymDvkVbO98/getUpdates "HTTP/1.1 200 OK"
+2025-06-24 00:33:30,921 - WARNING - Yetersiz zaman dilimi verisi: AVAX/USDT
