@@ -146,6 +146,7 @@ async def get_top_20_binance_pairs():
     if TICKERS_CACHE is None or TICKERS_CACHE_TIME is None or (
             now - TICKERS_CACHE_TIME).total_seconds() > TICKERS_CACHE_DURATION:
         try:
+            await asyncio.sleep(1)  # Rate limit önleme
             TICKERS_CACHE = await BINANCE.fetch_tickers()
             TICKERS_CACHE_TIME = now
         except Exception as e:
@@ -155,9 +156,12 @@ async def get_top_20_binance_pairs():
     stable_coins = ['USDC', 'TUSD', 'BUSD', 'DAI', 'FDUSD', 'TRX']
     usdt_tickers = {symbol: data for symbol, data in usdt_tickers.items()
                     if not any(symbol.startswith(stable + '/') for stable in stable_coins)}
+    # Hacim 100 milyon USDT üstü filtreleme
+    usdt_tickers = {symbol: data for symbol, data in usdt_tickers.items()
+                    if float(data.get('quoteVolume', 0) or 0) > 200000000}
     sorted_pairs = sorted(
         usdt_tickers.items(),
-        key=lambda x: x[1].get('quoteVolume', 0),
+        key=lambda x: float(x[1].get('quoteVolume', 0) or 0),
         reverse=True
     )
     top20_pairs = [symbol for symbol, _ in sorted_pairs[:20]]
@@ -530,7 +534,7 @@ async def send_periodic_signals(app: Application):
 
             top20_pairs = await get_top_20_binance_pairs()
             if not top20_pairs:
-                print("Top 20 coin alınamadı.")
+                print("Top 20 coin alınamadı, 3 saat bekleniyor.")
                 await asyncio.sleep(10800)  # 3 saat
                 continue
 
@@ -539,7 +543,7 @@ async def send_periodic_signals(app: Application):
             while True:
                 available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
                 if not available_coins:
-                    print("Tüm coin’ler denendi, 3 saat bekleniyor.")
+                    print("Tüm coin'ler denendi, bir sonraki döngüye geçiliyor.")
                     break
                 symbol = random.choice(available_coins)
                 tried_coins.add(symbol)
@@ -553,6 +557,10 @@ async def send_periodic_signals(app: Application):
                         except Exception as e:
                             print(f"Sinyal gönderilemedi ({chat_id}): {e}")
                     break
+                # Eğer sinyal yoksa, başka bir coin veya timeframe dene
+                elif not available_coins:
+                    timeframe = random.choice(VALID_TIMEFRAMES)  # Yeni timeframe dene
+                    tried_coins.clear()
             print(f"3 saat bekleniyor... ({datetime.now()})")
             await asyncio.sleep(10800)  # 3 saat
         except Exception as e:
@@ -615,35 +623,43 @@ async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text('❌ USDT çiftleri alınamadı!')
             return
 
-        top20_pairs = await get_top_20_binance_pairs()
-        if not top20_pairs:
-            await update.message.reply_text('❌ Binance top 20 coinler alınamadı!')
-            return
-
         tried_coins = set()
         if coin:
             symbol = f'{coin}/USDT'
             if symbol not in usdt_pairs:
-                symbol = None
-            else:
+                await update.message.reply_text(f'❌ {coin} USDT çifti bulunamadı!')
+                return
+            # Manuel coin için tüm timeframeler denenir
+            for tf in VALID_TIMEFRAMES:
+                df = await get_price_data(symbol, tf)
+                message = await generate_signal(df, symbol, tf)
+                if message:
+                    await update.message.reply_text(message)
+                    return
+            await update.message.reply_text(f'❌ {coin} için herhangi bir sinyal üretilemedi.')
+            return
+        else:
+            top20_pairs = await get_top_20_binance_pairs()
+            if not top20_pairs:
+                await update.message.reply_text('❌ Top 20 coinler alınamadı!')
+                return
+            while True:
+                available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
+                if not available_coins:
+                    timeframe = random.choice(VALID_TIMEFRAMES)  # Yeni timeframe dene
+                    tried_coins.clear()
+                    available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
+                symbol = random.choice(available_coins)
+                tried_coins.add(symbol)
                 df = await get_price_data(symbol, timeframe)
                 message = await generate_signal(df, symbol, timeframe)
                 if message:
                     await update.message.reply_text(message)
                     return
-                tried_coins.add(symbol)
-        while True:
-            available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
-            if not available_coins:
-                await update.message.reply_text('❌ Tüm coin’ler denendi, sinyal üretilemedi!')
-                return
-            symbol = random.choice(available_coins)
-            tried_coins.add(symbol)
-            df = await get_price_data(symbol, timeframe)
-            message = await generate_signal(df, symbol, timeframe)
-            if message:
-                await update.message.reply_text(message)
-                return
+                # Eğer sinyal yoksa, başka timeframe dene
+                elif not available_coins:
+                    timeframe = random.choice(VALID_TIMEFRAMES)
+                    tried_coins.clear()
     except Exception as e:
         print(f"Sinyal komutu hatası: {e}")
         await update.message.reply_text('❌ Sinyal oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.')
