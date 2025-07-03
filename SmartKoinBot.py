@@ -1,144 +1,195 @@
-import os
+# main.py - Fibonacci Analizi Tamamen Kaldırılmış Versiyon
+
 import asyncio
+import logging
+import platform
+import random
+import sys
+import os
 import sqlite3
+from datetime import datetime, timedelta
+
+import aiohttp
 import numpy as np
 import pandas as pd
 import ccxt.async_support as ccxt_async
-from datetime import datetime, timedelta
-import traceback
-import random
+from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-import platform
-import aiohttp
-from dotenv import load_dotenv
+from telegram.error import BadRequest
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import pytz
 
-# Random seed başlat
-random.seed()
+# ==============================================================================
+# 1. BAŞLANGIÇ AYARLARI VE KONFİGÜRASYON
+# ==============================================================================
 
-# .env dosyasını yükle
 load_dotenv()
 
-# Windows için SelectorEventLoop
 if platform.system() == "Windows":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-# Ortam değişkenleri
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN', '7818791938:AAEzKfKf83Lp5fdae2_PTkAw9Qo3_0bNRfw')
-CMC_API_KEY = os.getenv('CMC_API_KEY', '')
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("bot.log", encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+BINANCE_API_KEY = os.getenv('BINANCE_API_KEY')
+BINANCE_API_SECRET = os.getenv('BINANCE_API_SECRET')
+CMC_API_KEY = os.getenv('CMC_API_KEY')
 DB_FILE = 'users.db'
-
-# Binance ayarları
-BINANCE = ccxt_async.binance({
-    'apiKey': os.getenv('BINANCE_API_KEY', 'ba2AjFONSLAVd2c95WCgZZL23xOs6MYiWHW8r4E0d2AcLynQUDeBWVkULxDSkB3X'),
-    'secret': os.getenv('BINANCE_API_SECRET', 'i8FYOJQ1fMoHP7Sbsf3VbuyjPRwrKoHaprXxl7n53ZalvvsV0M8C9Mp8bfTgiTov'),
-    'enableRateLimit': True,
-    'rateLimit': 1000,
-})
-
-# Önbellek ayarları
-MARKETS_CACHE = None
-MARKETS_CACHE_TIME = None
-DATA_CACHE = {}
 CACHE_DURATION = 3600
 VALID_TIMEFRAMES = ['1h', '2h', '4h', '6h']
-TICKERS_CACHE = None
-TICKERS_CACHE_TIME = None
 TICKERS_CACHE_DURATION = 120
 
+
+# ==============================================================================
+# 2. VERİTABANI FONKSİYONLARI
+# ==============================================================================
+
 def init_db():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            c = conn.cursor()
+            c.execute('CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY, chat_id INTEGER, created_at TEXT)')
+            c.execute('''CREATE TABLE IF NOT EXISTS signals
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT, symbol TEXT, timeframe TEXT, signal_type TEXT, price REAL,
+                          stop_loss REAL, take_profit REAL, atr REAL, percent_sl REAL, percent_tp REAL, created_at TEXT,
+                          status TEXT DEFAULT 'active')''')
+            predefined_users = [('yetkiliadmin', None), ('prokullanici', None), ('vipkullanici', None)]
+            c.executemany('INSERT OR IGNORE INTO users (user_id, chat_id, created_at) VALUES (?, ?, ?)',
+                          [(user, chat_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')) for user, chat_id in
+                           predefined_users])
+            conn.commit()
+            logging.info("Veritabanı başlatma tamamlandı.")
+    except Exception as e:
+        logging.critical(f"Veritabanı başlatılırken kritik hata: {e}", exc_info=True)
 
-    # Users tablosunu oluştur
-    c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (user_id TEXT PRIMARY KEY, chat_id INTEGER, created_at TEXT)''')
-
-    # Signals tablosunu oluştur
-    c.execute("PRAGMA table_info(signals)")
-    columns = [col[1] for col in c.fetchall()]
-
-    expected_columns = [
-        'id', 'symbol', 'timeframe', 'signal_type', 'price', 'stop_loss', 'take_profit',
-        'atr', 'percent_sl', 'percent_tp', 'created_at'
-    ]
-
-    if not columns or not all(col in columns for col in expected_columns):
-        if columns:
-            c.execute('ALTER TABLE signals RENAME TO signals_backup')
-        c.execute('''CREATE TABLE signals
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      symbol TEXT,
-                      timeframe TEXT,
-                      signal_type TEXT,
-                      price REAL,
-                      stop_loss REAL,
-                      take_profit REAL,
-                      atr REAL,
-                      percent_sl REAL,
-                      percent_tp REAL,
-                      created_at TEXT)''')
-        if columns:
-            try:
-                common_columns = [col for col in columns if col in expected_columns and col != 'id']
-                if common_columns:
-                    c.execute(f'''INSERT INTO signals ({', '.join(common_columns)})
-                                 SELECT {', '.join(common_columns)} FROM signals_backup''')
-                c.execute('DROP TABLE signals_backup')
-            except Exception as e:
-                print(f"Eski sinyal verileri aktarılırken hata: {e}")
-
-    # Ön tanımlı kullanıcıları ekle
-    predefined_users = [
-        ('yetkiliadmin', None),
-        ('prokullanici', None),
-        ('vipkullanici', None)
-    ]
-    for user_id, chat_id in predefined_users:
-        c.execute('INSERT OR IGNORE INTO users (user_id, chat_id, created_at) VALUES (?, ?, ?)',
-                  (user_id, chat_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-
-    conn.commit()
-    conn.close()
 
 def check_user(user_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT chat_id FROM users WHERE user_id = ?', (user_id,))
-    result = c.fetchone()
-    conn.close()
-    return result
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            return conn.cursor().execute('SELECT chat_id FROM users WHERE user_id = ?', (user_id,)).fetchone()
+    except Exception as e:
+        logging.error(f"Kullanıcı kontrol hatası ({user_id}): {e}", exc_info=True)
+        return None
+
 
 def save_user(user_id, chat_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('UPDATE users SET chat_id = ?, created_at = ? WHERE user_id = ?',
-              (chat_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user_id))
-    conn.commit()
-    conn.close()
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.cursor().execute('UPDATE users SET chat_id = ?, created_at = ? WHERE user_id = ?',
+                                  (chat_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), user_id))
+            conn.commit()
+            logging.info(f"Kullanıcı {user_id} ({chat_id}) kaydedildi/güncellendi.")
+    except Exception as e:
+        logging.error(f"Kullanıcı kaydetme hatası ({user_id}): {e}", exc_info=True)
+
 
 def check_chat_id(chat_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT user_id FROM users WHERE chat_id = ?', (chat_id,))
-    result = c.fetchone()
-    conn.close()
-    return result
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            return conn.cursor().execute('SELECT user_id FROM users WHERE chat_id = ?', (chat_id,)).fetchone()
+    except Exception as e:
+        logging.error(f"Chat ID kontrol hatası ({chat_id}): {e}", exc_info=True)
+        return None
+
 
 def exit_user(chat_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('UPDATE users SET chat_id = NULL WHERE chat_id = ?', (chat_id,))
-    conn.commit()
-    conn.close()
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.cursor().execute('UPDATE users SET chat_id = NULL WHERE chat_id = ?', (chat_id,))
+            conn.commit()
+            logging.info(f"Kullanıcı {chat_id} çıkış yaptı.")
+    except Exception as e:
+        logging.error(f"Kullanıcı çıkış hatası ({chat_id}): {e}", exc_info=True)
+
 
 def get_authorized_users():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('SELECT user_id, chat_id FROM users WHERE chat_id IS NOT NULL')
-    results = c.fetchall()
-    conn.close()
-    return results
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            return conn.cursor().execute('SELECT user_id, chat_id FROM users WHERE chat_id IS NOT NULL').fetchall()
+    except Exception as e:
+        logging.error(f"Yetkili kullanıcıları alma hatası: {e}", exc_info=True)
+        return []
+
+
+def save_signal(symbol, timeframe, signal_type, price, stop_loss, take_profit, atr, percent_sl, percent_tp,
+                status='active'):
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.cursor().execute('''INSERT INTO signals (symbol, timeframe, signal_type, price, stop_loss, take_profit, atr, 
+                                     percent_sl, percent_tp, created_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                  (symbol, timeframe, signal_type, price, stop_loss, take_profit, atr,
+                                   percent_sl, percent_tp, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), status))
+            conn.commit()
+            logging.info(f"Sinyal veritabanına kaydedildi: {symbol} - {signal_type}")
+    except Exception as e:
+        logging.error(f"Sinyal kaydetme hatası ({symbol}): {e}", exc_info=True)
+
+
+def get_signal_stats():
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            c = conn.cursor()
+            forty_eight_hours_ago = (datetime.now() - timedelta(hours=48)).strftime('%Y-%m-%d %H:%M:%S')
+            c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ?", (forty_eight_hours_ago,))
+            total = c.fetchone()[0]
+            c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ? AND status = 'TP_hit'",
+                      (forty_eight_hours_ago,))
+            tp_hits = c.fetchone()[0]
+            c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ? AND status = 'SL_hit'",
+                      (forty_eight_hours_ago,))
+            sl_hits = c.fetchone()[0]
+            return total, tp_hits, sl_hits
+    except Exception as e:
+        logging.error(f"Sinyal istatistikleri alma hatası: {e}", exc_info=True)
+        return 0, 0, 0
+
+
+# ==============================================================================
+# 3. YARDIMCI & API FONKSİYONLARI
+# ==============================================================================
+
+def setup_signal_logger():
+    log_filename = f"sinyaller_{datetime.now().strftime('%Y_%m')}.log"
+    signal_logger = logging.getLogger('SignalLogger')
+    signal_logger.setLevel(logging.INFO)
+    if signal_logger.hasHandlers():
+        signal_logger.handlers.clear()
+    handler = logging.FileHandler(log_filename, encoding='utf-8')
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    handler.setFormatter(formatter)
+    signal_logger.addHandler(handler)
+    return signal_logger
+
+
+def log_signal(message):
+    logger = logging.getLogger('SignalLogger')
+    clean_message = message.replace('*', '').replace('_', '').replace('`', '').replace('\\', '')
+    logger.info("\n" + "-" * 50 + "\n" + clean_message + "\n" + "-" * 50)
+
+
+BINANCE = ccxt_async.binance({
+    'apiKey': BINANCE_API_KEY,
+    'secret': BINANCE_API_SECRET,
+    'enableRateLimit': True,
+    'options': {'defaultType': 'spot'},
+})
+
+MARKETS_CACHE, MARKETS_CACHE_TIME = None, None
+TICKERS_CACHE, TICKERS_CACHE_TIME = None, None
+DATA_CACHE = {}
+
 
 async def get_top_20_binance_pairs():
     global TICKERS_CACHE, TICKERS_CACHE_TIME
@@ -146,691 +197,330 @@ async def get_top_20_binance_pairs():
     if TICKERS_CACHE is None or TICKERS_CACHE_TIME is None or (
             now - TICKERS_CACHE_TIME).total_seconds() > TICKERS_CACHE_DURATION:
         try:
-            await asyncio.sleep(1)  # Rate limit önleme
-            TICKERS_CACHE = await BINANCE.fetch_tickers()
-            TICKERS_CACHE_TIME = now
+            logging.info("Binance Top 20 coin verisi çekiliyor...")
+            tickers = await BINANCE.fetch_tickers()
+            TICKERS_CACHE, TICKERS_CACHE_TIME = tickers, now
         except Exception as e:
-            print(f'Binance top 20 çekilemedi: {e}')
+            logging.error(f'Binance Top 20 çekilirken hata: {e}')
             return []
-    usdt_tickers = {symbol: data for symbol, data in TICKERS_CACHE.items() if symbol.endswith('/USDT')}
+    usdt_tickers = {s: d for s, d in TICKERS_CACHE.items() if s.endswith('/USDT')}
     stable_coins = ['USDC', 'TUSD', 'BUSD', 'DAI', 'FDUSD', 'TRX']
-    usdt_tickers = {symbol: data for symbol, data in usdt_tickers.items()
-                    if not any(symbol.startswith(stable + '/') for stable in stable_coins)}
-    # Hacim 100 milyon USDT üstü filtreleme
-    usdt_tickers = {symbol: data for symbol, data in usdt_tickers.items()
-                    if float(data.get('quoteVolume', 0) or 0) > 200000000}
-    sorted_pairs = sorted(
-        usdt_tickers.items(),
-        key=lambda x: float(x[1].get('quoteVolume', 0) or 0),
-        reverse=True
-    )
-    top20_pairs = [symbol for symbol, _ in sorted_pairs[:20]]
-    return top20_pairs
+    usdt_tickers = {s: d for s, d in usdt_tickers.items() if not any(s.startswith(sc + '/') for sc in stable_coins)}
+    volumes = [float(d.get('quoteVolume', 0) or 0) for d in usdt_tickers.values()]
+    if not volumes: return []
+    volume_threshold = max(np.percentile(volumes, 50) * 0.1, 10_000_000)
+    high_volume_pairs = {s: d for s, d in usdt_tickers.items() if
+                         float(d.get('quoteVolume', 0) or 0) > volume_threshold}
+    sorted_pairs = sorted(high_volume_pairs.items(), key=lambda x: float(x[1].get('quoteVolume', 0) or 0), reverse=True)
+    return [s for s, _ in sorted_pairs[:20]]
 
-async def get_usdt_pairs():
-    global MARKETS_CACHE, MARKETS_CACHE_TIME
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            if MARKETS_CACHE is None or MARKETS_CACHE_TIME is None or \
-                    (datetime.now() - MARKETS_CACHE_TIME).total_seconds() > CACHE_DURATION:
-                await asyncio.sleep(0.5 * (attempt + 1))
-                markets = await BINANCE.load_markets()
-                MARKETS_CACHE = markets
-                MARKETS_CACHE_TIME = datetime.now()
-            usdt_pairs = [market for market in MARKETS_CACHE if
-                          market.endswith('/USDT') and MARKETS_CACHE[market]['active']]
-            stable_coins = ['USDC', 'TUSD', 'BUSD', 'DAI', 'FDUSD']
-            usdt_pairs = [pair for pair in usdt_pairs
-                          if not any(pair.startswith(stable + '/') for stable in stable_coins)]
-            return usdt_pairs
-        except ccxt_async.RateLimitExceeded:
-            if attempt < max_retries - 1:
-                print(f'Rate limit hatası, {10 * (attempt + 1)} saniye bekleniyor...')
-                await asyncio.sleep(10 * (attempt + 1))
-                continue
-            print('USDT çiftleri alınamadı: Rate limit aşıldı')
-            return []
-        except Exception as e:
-            print(f'USDT çiftleri alınamadı: {e}')
-            return []
 
-async def get_price_data(symbol, timeframe='1h', limit=100):
+async def get_price_data(symbol, timeframe='1h', limit=200):
     cache_key = f'{symbol}_{timeframe}'
+    if cache_key in DATA_CACHE and (datetime.now() - DATA_CACHE[cache_key][1]).total_seconds() < CACHE_DURATION:
+        return DATA_CACHE[cache_key][0]
     try:
-        if cache_key in DATA_CACHE:
-            cached_df, cached_time = DATA_CACHE[cache_key]
-            if (datetime.now() - cached_time).total_seconds() < CACHE_DURATION:
-                return cached_df
-
+        logging.info(f"Fiyat verisi çekiliyor: {symbol} {timeframe}")
         await asyncio.sleep(0.5)
         ohlcv = await BINANCE.fetch_ohlcv(symbol, timeframe, limit=limit)
+        if not ohlcv or len(ohlcv) < 100:
+            logging.warning(f"Yetersiz OHLCV verisi: {symbol} {timeframe}")
+            return None
         df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-        if len(df) < 50:
-            return None
         DATA_CACHE[cache_key] = (df, datetime.now())
         return df
     except Exception as e:
-        print(f'Veri çekme hatası ({symbol}): {e}')
+        logging.error(f'Veri çekme hatası ({symbol}, {timeframe}): {e}')
         return None
 
-async def get_top_30_coins():
-    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-    headers = {'X-CMC_PRO_API_KEY': CMC_API_KEY} if CMC_API_KEY else {}
-    params = {'start': '1', 'limit': '30', 'convert': 'USD'}
 
-    async with aiohttp.ClientSession() as session:
-        try:
+async def close_binance_session():
+    await BINANCE.close()
+
+
+async def get_top_30_coins():
+    if not CMC_API_KEY:
+        return '❌ CoinMarketCap API anahtarı ayarlanmamış\\.'
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    headers = {'X-CMC_PRO_API_KEY': CMC_API_KEY}
+    params = {'start': '1', 'limit': '30', 'convert': 'USD'}
+    try:
+        async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as response:
                 if response.status != 200:
-                    return '❌ CoinMarketCap API hatası. Lütfen daha sonra tekrar deneyin.'
+                    return '❌ CoinMarketCap API hatası\\.'
                 data = await response.json()
-                if 'data' not in data:
-                    return '❌ CoinMarketCap verisi alınamadı.'
-
                 coins = data['data']
-                message = '📊 CoinMarketCap En İyi 30 Coin:\n\n'
+                message = '📊 *CoinMarketCap En İyi 30 Coin:*\n\n'
                 for coin in coins:
-                    rank = coin['cmc_rank']
-                    name = coin['name']
-                    symbol = coin['symbol']
                     price = coin['quote']['USD']['price']
-                    percent_change = coin['quote']['USD']['percent_change_24h']
-                    message += (
-                        f'#{rank} {name} ({symbol})\n'
-                        f'💵 Fiyat: ${price:,.2f}\n'
-                        f'📈 24s Değişim: {percent_change:.2f}%\n\n'
-                    )
+                    change = coin['quote']['USD']['percent_change_24h']
+                    message += (f"*{coin['cmc_rank']}\\. {coin['name']} ({coin['symbol']})*\n"
+                                f"› Fiyat: `${price:,.4f}`\n"
+                                f"› 24s Değişim: `{change:.2f}%`\n\n")
                 return message
-        except Exception as e:
-            return f'❌ Hata: CoinMarketCap verisi alınamadı. {str(e)}'
+    except Exception as e:
+        logging.error(f'CMC verisi alınırken hata: {e}')
+        return '❌ CoinMarketCap verisi alınamadı\\.'
+
+
+# ==============================================================================
+# 4. TEKNİK ANALİZ VE SİNYAL ÜRETME
+# ==============================================================================
 
 def calculate_rsi(data, periods=14):
-    delta = data.diff()
+    delta = data.diff();
     gain = delta.where(delta > 0, 0).rolling(window=periods).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=periods).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=periods).mean();
     rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
+    return 100 - (100 / (1 + rs))
+
 
 def calculate_macd(data, fast=12, slow=26, signal=9):
-    exp1 = data.ewm(span=fast, adjust=False).mean()
+    exp1 = data.ewm(span=fast, adjust=False).mean();
     exp2 = data.ewm(span=slow, adjust=False).mean()
-    macd = exp1 - exp2
+    macd = exp1 - exp2;
     signal_line = macd.ewm(span=signal, adjust=False).mean()
     return macd, signal_line
 
+
 def calculate_bollinger_bands(data, periods=20, std_dev=2):
-    sma = data.rolling(window=periods).mean()
+    sma = data.rolling(window=periods).mean();
     std = data.rolling(window=periods).std()
-    upper_band = sma + (std * std_dev)
-    lower_band = sma - (std * std_dev)
-    return sma, upper_band, lower_band
+    return sma, sma + (std * std_dev), sma - (std * std_dev)
 
-def calculate_sma(data, periods=20):
-    return data.rolling(window=periods).mean()
-
-def calculate_ema(data, periods=20):
-    return data.ewm(span=periods, adjust=False).mean()
-
-def calculate_stochastic(data_high, data_low, data_close, periods=14):
-    lowest_low = data_low.rolling(window=periods).min()
-    highest_high = data_high.rolling(window=periods).max()
-    k = 100 * (data_close - lowest_low) / (highest_high - lowest_low)
-    d = k.rolling(window=3).mean()
-    return k, d
-
-def calculate_adx(data_high, data_low, data_close, periods=14):
-    tr = np.maximum(data_high - data_low,
-                    np.maximum(abs(data_high - data_close.shift()), abs(data_low - data_close.shift())))
-    tr = tr.rolling(window=periods).mean()
-    dm_plus = (data_high - data_high.shift()).where((data_high - data_high.shift()) > (data_low.shift() - data_low), 0)
-    dm_minus = (data_low.shift() - data_low).where((data_low.shift() - data_low) > (data_high - data_high.shift()), 0)
-    dm_plus = dm_plus.rolling(window=periods).mean()
-    dm_minus = dm_minus.rolling(window=periods).mean()
-    di_plus = 100 * dm_plus / tr
-    di_minus = 100 * dm_minus / tr
-    dx = 100 * abs(di_plus - di_minus) / (di_plus + di_minus)
-    adx = dx.rolling(window=periods).mean()
-    return adx, di_plus, di_minus
-
-def calculate_williams_r(data_high, data_low, data_close, periods=14):
-    highest_high = data_high.rolling(window=periods).max()
-    lowest_low = data_low.rolling(window=periods).min()
-    williams_r = -100 * (highest_high - data_close) / (highest_high - lowest_low)
-    return williams_r
-
-def calculate_mfi(data_high, data_low, data_close, volume, periods=14):
-    typical_price = (data_high + data_low + data_close) / 3
-    raw_money_flow = typical_price * volume
-    positive_flow = raw_money_flow.where(typical_price > typical_price.shift(), 0)
-    negative_flow = raw_money_flow.where(typical_price < typical_price.shift(), 0)
-    positive_flow = positive_flow.rolling(window=periods).sum()
-    negative_flow = negative_flow.rolling(window=periods).sum()
-    mfi = 100 - (100 / (1 + positive_flow / negative_flow))
-    return mfi
 
 def calculate_atr(df, periods=14):
-    high_low = df['high'] - df['low']
-    high_close = np.abs(df['high'] - df['close'].shift())
-    low_close = np.abs(df['low'] - df['close'].shift())
-    tr = np.maximum(high_low, np.maximum(high_close, low_close))
-    atr = tr.rolling(window=periods).mean()
-    return atr
+    tr = np.maximum(df['high'] - df['low'],
+                    np.maximum(abs(df['high'] - df['close'].shift()), abs(df['low'] - df['close'].shift())))
+    return tr.rolling(window=periods).mean()
 
-def calculate_ema_cross(data, fast_period=9, slow_period=21):
-    fast_ema = data.ewm(span=fast_period, adjust=False).mean()
-    slow_ema = data.ewm(span=slow_period, adjust=False).mean()
-    return fast_ema, slow_ema
 
 def calculate_price_action(df):
-    if len(df) < 3:
-        return None
-    latest = df.iloc[-1]
-    prev = df.iloc[-2]
-    prev2 = df.iloc[-3]
+    if len(df) < 2: return None
+    latest, prev = df.iloc[-1], df.iloc[-2]
+    bullish_engulfing = (
+                prev['close'] < prev['open'] and latest['close'] > latest['open'] and latest['close'] > prev['open'] and
+                latest['open'] < prev['close'])
+    bearish_engulfing = (
+                prev['close'] > prev['open'] and latest['close'] < latest['open'] and latest['close'] < prev['open'] and
+                latest['open'] > prev['close'])
+    if bullish_engulfing: return 'bullish_engulfing'
+    if bearish_engulfing: return 'bearish_engulfing'
+    return None
 
-    bullish_engulfing = (prev['close'] < prev['open'] and
-                         latest['close'] > latest['open'] and
-                         latest['close'] > prev['open'] and
-                         latest['open'] < prev['close'])
 
-    bearish_engulfing = (prev['close'] > prev['open'] and
-                         latest['close'] < latest['open'] and
-                         latest['close'] < prev['open'] and
-                         latest['open'] > prev['close'])
-
-    return 'bullish' if bullish_engulfing else 'bearish' if bearish_engulfing else None
-
-def save_signal(symbol, timeframe, signal_type, price, stop_loss, take_profit, atr, percent_sl, percent_tp):
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute('''INSERT INTO signals (symbol, timeframe, signal_type, price, stop_loss, take_profit, atr, 
-                     percent_sl, percent_tp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                  (symbol, timeframe, signal_type, price, stop_loss, take_profit, atr,
-                   percent_sl, percent_tp, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-        conn.commit()
-    except Exception as e:
-        print(f"Sinyal kaydetme hatası: {e}")
-    finally:
-        conn.close()
-
-def get_signal_stats():
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        forty_eight_hours_ago = (datetime.now() - timedelta(hours=48)).strftime('%Y-%m-%d %H:%M:%S')
-        c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ?", (forty_eight_hours_ago,))
-        total_signals = c.fetchone()[0]
-        conn.close()
-        return total_signals, 0, 0
-    except Exception as e:
-        print(f"Sinyal istatistikleri hatası: {e}")
-        return 0, 0, 0
+# --- Fibonacci Fonskiyonu KALDIRILDI ---
 
 async def generate_signal(df, symbol, timeframe):
+    if df is None or len(df) < 50: return None
     try:
-        if df is None or len(df) < 50 or not all(
-                col in df.columns for col in ['open', 'high', 'low', 'close', 'volume']):
-            return None
-
-        df['rsi'] = calculate_rsi(df['close'])
+        df['rsi'] = calculate_rsi(df['close']);
         df['macd'], df['macd_signal'] = calculate_macd(df['close'])
-        df['sma'], df['bb_upper'], df['bb_lower'] = calculate_bollinger_bands(df['close'])
-        df['ema'] = calculate_ema(df['close'])
-        df['stoch_k'], df['stoch_d'] = calculate_stochastic(df['high'], df['low'], df['close'])
-        df['adx'], df['di_plus'], df['di_minus'] = calculate_adx(df['high'], df['low'], df['close'])
-        df['williams_r'] = calculate_williams_r(df['high'], df['low'], df['close'])
-        df['mfi'] = calculate_mfi(df['high'], df['low'], df['close'], df['volume'])
+        df['sma'], df['bb_upper'], df['bb_lower'] = calculate_bollinger_bands(df['close']);
         df['atr'] = calculate_atr(df)
-        df['fast_ema'], df['slow_ema'] = calculate_ema_cross(df['close'])
-
-        pa_signal = calculate_price_action(df)
-
-        if df[['rsi', 'macd', 'bb_upper', 'bb_lower', 'atr', 'fast_ema', 'slow_ema']].iloc[-1].isna().any():
-            return None
-
-        latest_rsi = df['rsi'].iloc[-1]
-        latest_macd = df['macd'].iloc[-1]
-        latest_macd_signal = df['macd_signal'].iloc[-1]
-        latest_price = df['close'].iloc[-1]
-        latest_bb_upper = df['bb_upper'].iloc[-1]
-        latest_bb_lower = df['bb_lower'].iloc[-1]
-        latest_sma = df['sma'].iloc[-1]
-        latest_ema = df['ema'].iloc[-1]
-        latest_stoch_k = df['stoch_k'].iloc[-1]
-        latest_stoch_d = df['stoch_d'].iloc[-1]
-        latest_adx = df['adx'].iloc[-1]
-        latest_di_plus = df['di_plus'].iloc[-1]
-        latest_di_minus = df['di_minus'].iloc[-1]
-        latest_williams_r = df['williams_r'].iloc[-1]
-        latest_mfi = df['mfi'].iloc[-1]
-        latest_atr = df['atr'].iloc[-1]
-        latest_fast_ema = df['fast_ema'].iloc[-1]
-        latest_slow_ema = df['slow_ema'].iloc[-1]
-
-        buy_signals = []
-        sell_signals = []
-
-        if latest_rsi < 30:
-            buy_signals.append('RSI')
-        elif latest_rsi > 70:
-            sell_signals.append('RSI')
-
-        if latest_macd > latest_macd_signal and df['macd'].iloc[-2] <= df['macd_signal'].iloc[-2]:
-            buy_signals.append('MACD')
-        elif latest_macd < latest_macd_signal and df['macd'].iloc[-2] >= df['macd_signal'].iloc[-2]:
-            sell_signals.append('MACD')
-
-        if latest_price < latest_bb_lower:
-            buy_signals.append('Bollinger')
-        elif latest_price > latest_bb_upper:
-            sell_signals.append('Bollinger')
-
-        if latest_price > latest_sma and df['close'].iloc[-2] <= df['sma'].iloc[-2]:
-            buy_signals.append('SMA')
-        elif latest_price < latest_sma and df['close'].iloc[-2] >= df['sma'].iloc[-2]:
-            sell_signals.append('SMA')
-
-        if latest_price > latest_ema and df['close'].iloc[-2] <= df['ema'].iloc[-2]:
-            buy_signals.append('EMA')
-        elif latest_price < latest_ema and df['close'].iloc[-2] >= df['ema'].iloc[-2]:
-            sell_signals.append('EMA')
-
-        if latest_stoch_k < 20 and latest_stoch_k > latest_stoch_d:
-            buy_signals.append('Stochastic')
-        elif latest_stoch_k > 80 and latest_stoch_k < latest_stoch_d:
-            sell_signals.append('Stochastic')
-
-        if latest_adx > 25 and latest_di_plus > latest_di_minus:
-            buy_signals.append('ADX')
-        elif latest_adx > 25 and latest_di_minus > latest_di_plus:
-            sell_signals.append('ADX')
-
-        if latest_williams_r < -80:
-            buy_signals.append('Williams %R')
-        elif latest_williams_r > -20:
-            sell_signals.append('Williams %R')
-
-        if latest_mfi < 20:
-            buy_signals.append('MFI')
-        elif latest_mfi > 80:
-            sell_signals.append('MFI')
-
-        if latest_fast_ema > latest_slow_ema and df['fast_ema'].iloc[-2] <= df['slow_ema'].iloc[-2]:
-            buy_signals.append('EMA Cross')
-        elif latest_fast_ema < latest_slow_ema and df['fast_ema'].iloc[-2] >= df['slow_ema'].iloc[-2]:
-            sell_signals.append('EMA Cross')
-
-        if pa_signal == 'bullish':
-            buy_signals.append('Price Action')
-        elif pa_signal == 'bearish':
-            sell_signals.append('Price Action')
-
-        buy_count = len(buy_signals)
-        sell_count = len(sell_signals)
-        if buy_count > sell_count and buy_count > 0:
-            signal_type = 'Uzun'
-            signal_emoji = '🟢'
-            atr_stop_loss = latest_price - (2 * latest_atr)
-            atr_take_profit = latest_price + (4 * latest_atr)
-            percent_sl = latest_price * (1 - random.uniform(0.0003, 0.0005))
-            percent_tp = latest_price * (1 + random.uniform(0.0003, 0.0005) * 2)
-            rr = (atr_take_profit - latest_price) / (
-                        latest_price - atr_stop_loss) if latest_price != atr_stop_loss else 0
-        elif sell_count > buy_count and sell_count > 0:
-            signal_type = 'Kısa'
-            signal_emoji = '🔴'
-            atr_stop_loss = latest_price + (2 * latest_atr)
-            atr_take_profit = latest_price - (4 * latest_atr)
-            percent_sl = latest_price * (1 + random.uniform(0.0003, 0.0005))
-            percent_tp = latest_price * (1 - random.uniform(0.0003, 0.0005) * 2)
-            rr = (latest_price - atr_take_profit) / (
-                        atr_stop_loss - latest_price) if atr_stop_loss != latest_price else 0
+        pa_signal = calculate_price_action(df);
+        latest = df.iloc[-1]
+        if df[['rsi', 'macd', 'bb_upper', 'atr']].iloc[-1].isna().any(): return None
+        buy_score, sell_score = 0, 0
+        if latest['rsi'] < 35: buy_score += 1
+        if latest['rsi'] > 65: sell_score += 1
+        if latest['macd'] > latest['macd_signal'] and df['macd'].iloc[-2] <= df['macd_signal'].iloc[-2]: buy_score += 1
+        if latest['macd'] < latest['macd_signal'] and df['macd'].iloc[-2] >= df['macd_signal'].iloc[-2]: sell_score += 1
+        if latest['close'] < latest['bb_lower']: buy_score += 1
+        if latest['close'] > latest['bb_upper']: sell_score += 1
+        if pa_signal == 'bullish_engulfing': buy_score += 2
+        if pa_signal == 'bearish_engulfing': sell_score += 2
+        signal_type = 'Uzun' if buy_score > sell_score and buy_score >= 2 else 'Kısa' if sell_score > buy_score and sell_score >= 2 else None
+        if not signal_type: return None
+        latest_price, atr_val = latest['close'], latest['atr']
+        if signal_type == 'Uzun':
+            stop_loss, take_profit, emoji = latest_price - (2 * atr_val), latest_price + (4 * atr_val), '🟢'
         else:
-            return None
+            stop_loss, take_profit, emoji = latest_price + (2 * atr_val), latest_price - (4 * atr_val), '🔴'
+        rr = abs(take_profit - latest_price) / abs(latest_price - stop_loss) if abs(latest_price - stop_loss) > 0 else 0
 
+        # --- Fibonacci ile ilgili mesaj oluşturma kısmı KALDIRILDI ---
         message = (
-            f'{signal_emoji} {signal_type} Sinyal | #{symbol.replace("/", "")}\n'
-            f'🕒 Zaman Dilimi: {timeframe}\n'
-            f'💵 Fiyat: {latest_price:.8f} USDT\n'
-            f'🎯 Kâr Al: {atr_take_profit:.8f} USDT\n'
-            f'🛡️ Zarar Durdur: {atr_stop_loss:.8f} USDT\n'
-            f'📊 Risk-Ödül Oranı: {rr:.2f}'
+            f'{emoji} *{signal_type} Sinyal \\| #{symbol.replace("/", "")}*\n\n'
+            f'🕒 *Zaman Dilimi:* `{timeframe}`\n'
+            f'💵 *Giriş Fiyatı:* `{latest_price:.4f}`\n'
+            f'🎯 *Kâr Al:* `{take_profit:.4f}`\n'
+            f'🛡️ *Zarar Durdur:* `{stop_loss:.4f}`\n'
+            f'📊 *Risk/Ödül Oranı:* `{rr:.2f}`'  # Mesajın sonundan Fibonacci bölümü çıkarıldı
         )
-
-        save_signal(symbol, timeframe, signal_type, latest_price, atr_stop_loss, atr_take_profit,
-                    latest_atr, percent_sl, percent_tp)
-
+        save_signal(symbol, timeframe, signal_type, latest_price, stop_loss, take_profit, atr_val, 0, 0)
+        log_signal(message)
         return message
     except Exception as e:
-        print(f"Sinyal oluşturma hatası: {e}")
+        logging.critical(f"Sinyal üretme hatası ({symbol}): {e}", exc_info=True)
         return None
 
-async def test_binance_connection():
+
+# ==============================================================================
+# 5. ZAMANLANMIŞ GÖREV VE TELEGRAM KOMUTLARI
+# ==============================================================================
+
+async def send_scheduled_signal(app: Application):
+    """Zamanlayıcı tarafından tetiklendiğinde tek bir sinyal bulup gönderir."""
+    logging.info("Zamanlanmış sinyal görevi tetiklendi.")
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.binance.com/api/v3/ping') as response:
-                if response.status == 200:
-                    print('Binance API bağlantısı başarılı!')
-                    return True
-                else:
-                    print(f'Binance API bağlantısı başarısız: Status {response.status}')
-                    return False
+        authorized_users = get_authorized_users()
+        if not authorized_users:
+            logging.info("Yetkili kullanıcı yok, sinyal gönderilmiyor.")
+            return
+
+        top20_pairs = await get_top_20_binance_pairs()
+        if not top20_pairs:
+            logging.warning("Top 20 coin alınamadı, sinyal gönderilemiyor.")
+            return
+
+        timeframe = random.choice(VALID_TIMEFRAMES)
+        random.shuffle(top20_pairs)
+
+        for symbol in top20_pairs:
+            df = await get_price_data(symbol, timeframe)
+            if df is None: continue
+            message = await generate_signal(df, symbol, timeframe)
+            if message:
+                logging.info(f"Zamanlanmış sinyal bulundu: {symbol}. Gönderiliyor...")
+                for user_id, chat_id in authorized_users:
+                    try:
+                        await app.bot.send_message(chat_id=chat_id, text=message, parse_mode='MarkdownV2')
+                    except BadRequest as e:
+                        if "Chat not found" in str(e):
+                            logging.warning(f"Kullanıcı botu engellemiş: {user_id}. Yetkisi kaldırılıyor.")
+                            exit_user(chat_id)
+                        else:
+                            logging.error(f"Sinyal gönderim hatası (Kullanıcı: {user_id}): {e}")
+                return
+
+        logging.info("Bu zaman diliminde uygun sinyal bulunamadı.")
+
     except Exception as e:
-        print(f'Bağlantı hatası: {e}')
-        return False
+        logging.critical(f"Zamanlanmış sinyal görevinde kritik hata: {e}", exc_info=True)
 
-async def send_periodic_signals(app: Application):
-    while True:
-        try:
-            authorized_users = get_authorized_users()
-            if not authorized_users:
-                print("Hiçbir yetkili kullanıcı bulunamadı.")
-                await asyncio.sleep(10800)  # 3 saat
-                continue
-
-            top20_pairs = await get_top_20_binance_pairs()
-            if not top20_pairs:
-                print("Top 20 coin alınamadı, 3 saat bekleniyor.")
-                await asyncio.sleep(10800)  # 3 saat
-                continue
-
-            timeframe = random.choice(VALID_TIMEFRAMES)
-            tried_coins = set()
-            while True:
-                available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
-                if not available_coins:
-                    print("Tüm coin'ler denendi, bir sonraki döngüye geçiliyor.")
-                    break
-                symbol = random.choice(available_coins)
-                tried_coins.add(symbol)
-                df = await get_price_data(symbol, timeframe)
-                message = await generate_signal(df, symbol, timeframe)
-                if message:
-                    for _, chat_id in authorized_users:
-                        try:
-                            await app.bot.send_message(chat_id=chat_id, text=message)
-                            print(f"Sinyal gönderildi: {chat_id}, {symbol}")
-                        except Exception as e:
-                            print(f"Sinyal gönderilemedi ({chat_id}): {e}")
-                    break
-                # Eğer sinyal yoksa, başka bir coin veya timeframe dene
-                elif not available_coins:
-                    timeframe = random.choice(VALID_TIMEFRAMES)  # Yeni timeframe dene
-                    tried_coins.clear()
-            print(f"3 saat bekleniyor... ({datetime.now()})")
-            await asyncio.sleep(10800)  # 3 saat
-        except Exception as e:
-            print(f"Periyodik sinyal hatası: {e}")
-            await asyncio.sleep(10800)  # 3 saat
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    args = context.args
-    if not args:
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+    if not context.args:
+        await update.message.reply_text('🚫 Yetkisiz erişim\\! `/start <ID>` şeklinde yetki alın\\.',
+                                        parse_mode='MarkdownV2')
         return
-    user_id = args[0]
+    user_id = context.args[0]
     result = check_user(user_id)
     if result:
-        saved_chat_id = result[0]
-        if saved_chat_id is None:
-            save_user(user_id, chat_id)
-            await update.message.reply_text(
-                f'🚀 Yetki alındı! Kullanıcı ID: {user_id}\n📡 Sinyal almak için /sinyal yaz.'
-            )
-        elif saved_chat_id == chat_id:
-            await update.message.reply_text(
-                f'🚀 Zaten yetkiniz var! Kullanıcı ID: {user_id}\n📡 Sinyal almak için /sinyal yaz.'
-            )
-        else:
-            await update.message.reply_text(
-                f'🚫 Bu kullanıcı ID ({user_id}) başka bir hesaba kayıtlı!'
-            )
+        save_user(user_id, update.message.chat_id)
+        await update.message.reply_text(f'🚀 Yetki alındı\\! Kullanıcı ID: `{user_id}`', parse_mode='MarkdownV2')
     else:
-        await update.message.reply_text('🚫 Geçersiz ID! Lütfen doğru ID ile tekrar deneyin.')
+        await update.message.reply_text('🚫 Geçersiz ID\\!', parse_mode='MarkdownV2')
 
-async def sinyal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    if not check_chat_id(chat_id):
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
+
+async def sinyal_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not check_chat_id(update.message.chat_id):
+        await update.message.reply_text('🚫 Yetkiniz yok\\. `/start <ID>`', parse_mode='MarkdownV2')
         return
-
-    try:
-        args = context.args
-        coin = None
-        timeframe = random.choice(VALID_TIMEFRAMES)
-
-        if args:
-            if len(args) == 1:
-                if args[0] in ['1', '2', '4', '6']:
-                    timeframe = f'{args[0]}h'
-                else:
-                    coin = args[0].upper()
-            elif len(args) == 2:
-                coin = args[0].upper()
-                if args[1] in ['1', '2', '4', '6']:
-                    timeframe = f'{args[1]}h'
-                else:
-                    await update.message.reply_text('❌ Geçersiz zaman dilimi! (1, 2, 4, 6 kullanın)')
-                    return
-
-        usdt_pairs = await get_usdt_pairs()
-        if not usdt_pairs:
-            await update.message.reply_text('❌ USDT çiftleri alınamadı!')
+    await update.message.reply_text('🔎 Sinyal aranıyor, lütfen bekleyin\\.\\.\\.', parse_mode='MarkdownV2')
+    coin = context.args[0].upper() if context.args else None
+    timeframe = f'{context.args[1]}h' if len(context.args) > 1 and context.args[1] in ['1', '2', '4',
+                                                                                       '6'] else random.choice(
+        VALID_TIMEFRAMES)
+    pairs_to_check = [f'{coin}/USDT'] if coin else await get_top_20_binance_pairs()
+    if not pairs_to_check:
+        await update.message.reply_text('❌ Coin listesi alınamadı\\.', parse_mode='MarkdownV2')
+        return
+    for symbol in pairs_to_check:
+        df = await get_price_data(symbol, timeframe)
+        if df is None: continue
+        message = await generate_signal(df, symbol, timeframe)
+        if message:
+            await update.message.reply_text(message, parse_mode='MarkdownV2')
             return
+    await update.message.reply_text(
+        f'❌ `{coin or "Rastgele"}` için `{timeframe}` zaman diliminde uygun bir sinyal bulunamadı\\.',
+        parse_mode='MarkdownV2')
 
-        tried_coins = set()
-        if coin:
-            symbol = f'{coin}/USDT'
-            if symbol not in usdt_pairs:
-                await update.message.reply_text(f'❌ {coin} USDT çifti bulunamadı!')
-                return
-            # Manuel coin için tüm timeframeler denenir
-            for tf in VALID_TIMEFRAMES:
-                df = await get_price_data(symbol, tf)
-                message = await generate_signal(df, symbol, tf)
-                if message:
-                    await update.message.reply_text(message)
-                    return
-            await update.message.reply_text(f'❌ {coin} için herhangi bir sinyal üretilemedi.')
-            return
-        else:
-            top20_pairs = await get_top_20_binance_pairs()
-            if not top20_pairs:
-                await update.message.reply_text('❌ Top 20 coinler alınamadı!')
-                return
-            while True:
-                available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
-                if not available_coins:
-                    timeframe = random.choice(VALID_TIMEFRAMES)  # Yeni timeframe dene
-                    tried_coins.clear()
-                    available_coins = [coin for coin in top20_pairs if coin not in tried_coins]
-                symbol = random.choice(available_coins)
-                tried_coins.add(symbol)
-                df = await get_price_data(symbol, timeframe)
-                message = await generate_signal(df, symbol, timeframe)
-                if message:
-                    await update.message.reply_text(message)
-                    return
-                # Eğer sinyal yoksa, başka timeframe dene
-                elif not available_coins:
-                    timeframe = random.choice(VALID_TIMEFRAMES)
-                    tried_coins.clear()
-    except Exception as e:
-        print(f"Sinyal komutu hatası: {e}")
-        await update.message.reply_text('❌ Sinyal oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.')
 
-async def signal_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
-        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
-        return
-    total, _, _ = get_signal_stats()
-    message = (
-        f'📊 Son 48 Saat Sinyal İstatistikleri:\n'
-        f'🔢 Toplam Sinyal: {total}\n'
-        f'✅ Başarılı (TP): Verilmiyor\n'
-        f'❌ Başarısız (SL): Verilmiyor'
-    )
-    await update.message.reply_text(message)
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    total, tp, sl = get_signal_stats()
+    await update.message.reply_text(
+        f'📊 *Son 48 Saat İstatistikleri:*\n\\- Toplam Sinyal: {total}\n\\- Başarılı \\(TP\\): {tp}\n\\- Başarısız \\(SL\\): {sl}',
+        parse_mode='MarkdownV2')
 
-async def active_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
-        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
-        return
-    users = get_authorized_users()
-    if not users:
-        await update.message.reply_text('📋 Aktif kullanıcı bulunamadı.')
-        return
-    message = '📋 Aktif Kullanıcılar:\n\n'
-    for user_id, chat_id in users:
-        message += f'👤 Kullanıcı ID: {user_id}, Chat ID: {chat_id}\n'
-    await update.message.reply_text(message)
 
-async def bilgi(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    bilgi_text = (
-        'ℹ️ *Finetic Trade Hakkında Detaylı Bilgi*\n\n'
-        'Finetic Trade, Binance spot piyasasındaki USDT pariteleri için teknik analiz ve price action tabanlı otomatik sinyal üreten bir Telegram botudur.\n\n'
-        '*Özellikler:*\n'
-        '- Gerçek zamanlı teknik analiz (RSI, MACD, Bollinger, EMA Cross, vb.) ve Price Action\n'
-        '- ATR ve % bazlı sinyaller\n'
-        '- Sinyal istatistikleri ve aktif kullanıcı listesi\n'
-        '- Kullanıcıya özel yetkilendirme ve güvenlik\n'
-        '- Gelişmiş /help ve /bilgi menüleri\n'
-        '*Kullanım için örnekler:*\n'
-        '- /start id adresiniz\n'
-        '- /sinyal BTC 1\n'
-        '- /sinyal\n'
-        '- /signalstats\n'
-        'Her türlü soru ve destek için: @finetictradee veya finetictrade@gmail.com\n'
-        'Gizlilik: Kullanıcı verileriniz üçüncü kişilerle paylaşılmaz.'
-    )
-    await update.message.reply_text(bilgi_text, parse_mode='Markdown')
-
-async def help_command(update: Update, context: ContextTypes):
-    help_text = (
-        "🤖 *Komutlar ve Açıklamaları*:\n\n"
-        "\\/sinyal \\[COIN\\] \\[1\\|2\\|4\\|6\\] \\- Rasgele veya saatlik sinyaller alırsın\\. Örnek: \\/sinyal BTC 1 veya \\/sinyal\n"
-        "\\/signalstats \\- Son 48 saat sinyal istatistiklerini gösterir\\.\n"
-        "\\/help \\- Bu yardım menüsünü gösterir\\.\n"
-        "\\/bilgi \\- Botun detaylı açıklaması ve kullanım rehberi\\.\n"
-    )
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    help_text = ("🤖 *Komut Listesi:*\n\n"
+                 "`/sinyal [COIN] [SAAT]` \\- Sinyal üretir\\. Ör: `/sinyal BTC 4` veya `/sinyal`\n"
+                 "`/stats` \\- Son 48 saatlik sinyal istatistiklerini gösterir\\.\n"
+                 "`/top30` \\- CoinMarketCap'ten en iyi 30 coini listeler\\.\n"
+                 "`/exit` \\- Hesabınızın sinyal yetkisini kaldırır\\.\n")
     await update.message.reply_text(help_text, parse_mode='MarkdownV2')
 
-async def exit(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    result = check_chat_id(chat_id)
-    if not result:
-        await update.message.reply_text('🚫 Yetkisiz erişim! Önce /start id ile yetki almalısınız.')
-        return
-    exit_user(chat_id)
-    await update.message.reply_text('✅ Başarıyla çıkış yaptınız. Tekrar giriş için /start id kullanabilirsiniz.')
 
-async def top30(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    if not check_chat_id(chat_id):
-        await update.message.reply_text('🚫 Yetkisiz erişim! /start id ile yetki al.')
-        return
+async def top30_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = await get_top_30_coins()
-    await update.message.reply_text(message)
+    await update.message.reply_text(message, parse_mode='MarkdownV2')
 
-async def tum_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
-        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
-        return
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('UPDATE users SET chat_id = NULL')
-    conn.commit()
-    conn.close()
-    await update.message.reply_text('✅ Tüm kullanıcılar çıkış yaptı.')
-    print(f'Tüm kullanıcılar çıkış yaptı: {chat_id}')
 
-async def kullanici_cikis(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    user = check_chat_id(chat_id)
-    if not user or user[0] not in ['yetkiliadmin', 'vipkullanici']:
-        await update.message.reply_text('🚫 Bu komutu sadece Yönetici çalıştırabilir!')
-        return
-    args = context.args
-    if not args:
-        await update.message.reply_text('Kullanım: /kullanicicikis <user_id>')
-        return
-    target_user_id = args[0]
-    if not check_user(target_user_id):
-        await update.message.reply_text(f'❌ Kullanıcı ID {target_user_id} bulunamadı!')
-        return
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('UPDATE users SET chat_id = NULL WHERE user_id = ?', (target_user_id,))
-    conn.commit()
-    conn.close()
-    await update.message.reply_text(f'✅ {target_user_id} kullanıcısı çıkış yaptı.')
-    print(f'Kullanıcı çıkış yaptı: {target_user_id}, {chat_id}')
+async def exit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    exit_user(update.message.chat_id)
+    await update.message.reply_text('✅ Başarıyla çıkış yaptınız\\.', parse_mode='MarkdownV2')
 
-async def shutdown(app, binance):
-    if app:
-        try:
-            await app.stop()
-            await app.shutdown()
-            print("Telegram botu kapatıldı.")
-        except Exception as e:
-            print(f'Kapatma sırasında hata: {e}')
+
+# ==============================================================================
+# 6. ANA ÇALIŞTIRMA BLOGU
+# ==============================================================================
+
+async def main_async():
+    if not TELEGRAM_TOKEN:
+        logging.critical("TELEGRAM_TOKEN bulunamadı! Lütfen .env dosyasını kontrol edin.")
+        return
+
+    init_db()
+    setup_signal_logger()
+
+    app = Application.builder().token(TELEGRAM_TOKEN).build()
+
+    turkey_tz = pytz.timezone('Europe/Istanbul')
+    scheduler = AsyncIOScheduler(timezone=turkey_tz)
+    scheduler.add_job(send_scheduled_signal, 'cron', hour=9, minute=30, args=[app])
+    scheduler.add_job(send_scheduled_signal, 'cron', hour=14, minute=45, args=[app])
+    scheduler.add_job(send_scheduled_signal, 'cron', hour=19, minute=15, args=[app])
+    scheduler.add_job(send_scheduled_signal, 'cron', hour=23, minute=15, args=[app])
+    scheduler.start()
+    logging.info(f"Sinyal zamanlayıcı kuruldu. Sinyal saatleri: 09:30, 14:45, 19:15, 23:15 (Türkiye Saati)")
+
+    app.add_handler(CommandHandler('start', start))
+    app.add_handler(CommandHandler(['sinyal', 'signal'], sinyal_command))
+    app.add_handler(CommandHandler(['stats', 'istatistik'], stats_command))
+    app.add_handler(CommandHandler(['help', 'yardim'], help_command))
+    app.add_handler(CommandHandler('top30', top30_command))
+    app.add_handler(CommandHandler('exit', exit_command))
+
     try:
-        await binance.close()
-        print("Binance bağlantısı kapatıldı.")
-    except Exception as e:
-        print(f'Binance kapatma hatası: {e}')
-
-def main():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    app = None
-    try:
-        init_db()
-        loop.run_until_complete(test_binance_connection())
-        app = Application.builder().token(TELEGRAM_TOKEN).build()
-        app.add_handler(CommandHandler('start', start))
-        app.add_handler(CommandHandler('sinyal', sinyal))
-        app.add_handler(CommandHandler('exit', exit))
-        app.add_handler(CommandHandler('Top30', top30))
-        app.add_handler(CommandHandler('bilgi', bilgi))
-        app.add_handler(CommandHandler('help', help_command))
-        app.add_handler(CommandHandler('tumcikis', tum_cikis))
-        app.add_handler(CommandHandler('kullanicicikis', kullanici_cikis))
-        app.add_handler(CommandHandler('signalstats', signal_stats))
-        app.add_handler(CommandHandler('activeusers', active_users))
-        loop.create_task(send_periodic_signals(app))
-        print('Bot başlatılıyor...')
-        loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
-    except KeyboardInterrupt:
-        print('Bot durduruluyor...')
-    except Exception as e:
-        print(f'Hata: {e}')
-        traceback.print_exc()
+        await app.initialize()
+        await app.start()
+        await app.updater.start_polling()
+        logging.info("Bot başlatıldı ve çalışıyor. Durdurmak için Ctrl+C'ye basın.")
+        print("Bot başlatıldı ve çalışıyor. Durdurmak için Ctrl+C'ye basın.")
+        await asyncio.Event().wait()
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Durdurma sinyali (Ctrl+C) algılandı.")
     finally:
-        if app:
-            loop.run_until_complete(shutdown(app, BINANCE))
-        if not loop.is_closed():
-            pending = asyncio.all_tasks(loop)
-            for task in pending:
-                task.cancel()
-            try:
-                loop.run_until_complete(loop.shutdown_asyncgens())
-                loop.run_until_complete(loop.shutdown_default_executor())
-            except asyncio.CancelledError:
-                pass
-            loop.close()
-        print("Olay döngüsü kapatıldı.")
+        logging.info("Bot ve bağlantılar kapatılıyor...")
+        scheduler.shutdown()
+        if app.updater and app.updater.is_running:
+            await app.updater.stop()
+        if app.is_running:
+            await app.stop()
+        await app.shutdown()
+        await close_binance_session()
+        logging.info("Tüm işlemler düzgünce kapatıldı.")
+        print("Bot kapatıldı.")
+
 
 if __name__ == '__main__':
-    main()
+    try:
+        asyncio.run(main_async())
+    except KeyboardInterrupt:
+        logging.info("Program kullanıcı tarafından sonlandırıldı.")
