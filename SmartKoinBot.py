@@ -1,4 +1,4 @@
-# main.py - Fibonacci Analizi Tamamen Kaldırılmış Versiyon
+# main.py - Son İsteklere Göre Düzenlenmiş, Sadeleştirilmiş ve Düzeltilmiş Versiyonn
 
 import asyncio
 import logging
@@ -53,7 +53,7 @@ TICKERS_CACHE_DURATION = 120
 
 
 # ==============================================================================
-# 2. VERİTABANI FONKSİYONLARI
+# 2. VERİTABANI FONKSİYONLARI (Sinyal İstatistikleri Kaldırıldı)
 # ==============================================================================
 
 def init_db():
@@ -137,24 +137,7 @@ def save_signal(symbol, timeframe, signal_type, price, stop_loss, take_profit, a
         logging.error(f"Sinyal kaydetme hatası ({symbol}): {e}", exc_info=True)
 
 
-def get_signal_stats():
-    try:
-        with sqlite3.connect(DB_FILE) as conn:
-            c = conn.cursor()
-            forty_eight_hours_ago = (datetime.now() - timedelta(hours=48)).strftime('%Y-%m-%d %H:%M:%S')
-            c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ?", (forty_eight_hours_ago,))
-            total = c.fetchone()[0]
-            c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ? AND status = 'TP_hit'",
-                      (forty_eight_hours_ago,))
-            tp_hits = c.fetchone()[0]
-            c.execute("SELECT COUNT(*) FROM signals WHERE created_at >= ? AND status = 'SL_hit'",
-                      (forty_eight_hours_ago,))
-            sl_hits = c.fetchone()[0]
-            return total, tp_hits, sl_hits
-    except Exception as e:
-        logging.error(f"Sinyal istatistikleri alma hatası: {e}", exc_info=True)
-        return 0, 0, 0
-
+# get_signal_stats fonksiyonu KALDIRILDI
 
 # ==============================================================================
 # 3. YARDIMCI & API FONKSİYONLARI
@@ -186,7 +169,6 @@ BINANCE = ccxt_async.binance({
     'options': {'defaultType': 'spot'},
 })
 
-MARKETS_CACHE, MARKETS_CACHE_TIME = None, None
 TICKERS_CACHE, TICKERS_CACHE_TIME = None, None
 DATA_CACHE = {}
 
@@ -311,8 +293,6 @@ def calculate_price_action(df):
     return None
 
 
-# --- Fibonacci Fonskiyonu KALDIRILDI ---
-
 async def generate_signal(df, symbol, timeframe):
     if df is None or len(df) < 50: return None
     try:
@@ -341,14 +321,13 @@ async def generate_signal(df, symbol, timeframe):
             stop_loss, take_profit, emoji = latest_price + (2 * atr_val), latest_price - (4 * atr_val), '🔴'
         rr = abs(take_profit - latest_price) / abs(latest_price - stop_loss) if abs(latest_price - stop_loss) > 0 else 0
 
-        # --- Fibonacci ile ilgili mesaj oluşturma kısmı KALDIRILDI ---
         message = (
             f'{emoji} *{signal_type} Sinyal \\| #{symbol.replace("/", "")}*\n\n'
             f'🕒 *Zaman Dilimi:* `{timeframe}`\n'
             f'💵 *Giriş Fiyatı:* `{latest_price:.4f}`\n'
             f'🎯 *Kâr Al:* `{take_profit:.4f}`\n'
             f'🛡️ *Zarar Durdur:* `{stop_loss:.4f}`\n'
-            f'📊 *Risk/Ödül Oranı:* `{rr:.2f}`'  # Mesajın sonundan Fibonacci bölümü çıkarıldı
+            f'📊 *Risk/Ödül Oranı:* `{rr:.2f}`'
         )
         save_signal(symbol, timeframe, signal_type, latest_price, stop_loss, take_profit, atr_val, 0, 0)
         log_signal(message)
@@ -363,7 +342,6 @@ async def generate_signal(df, symbol, timeframe):
 # ==============================================================================
 
 async def send_scheduled_signal(app: Application):
-    """Zamanlayıcı tarafından tetiklendiğinde tek bir sinyal bulup gönderir."""
     logging.info("Zamanlanmış sinyal görevi tetiklendi.")
     try:
         authorized_users = get_authorized_users()
@@ -441,20 +419,30 @@ async def sinyal_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='MarkdownV2')
 
 
-async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    total, tp, sl = get_signal_stats()
-    await update.message.reply_text(
-        f'📊 *Son 48 Saat İstatistikleri:*\n\\- Toplam Sinyal: {total}\n\\- Başarılı \\(TP\\): {tp}\n\\- Başarısız \\(SL\\): {sl}',
-        parse_mode='MarkdownV2')
-
+# stats_command fonksiyonu KALDIRILDI
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # 'stats' komutu listeden çıkarıldı
     help_text = ("🤖 *Komut Listesi:*\n\n"
                  "`/sinyal [COIN] [SAAT]` \\- Sinyal üretir\\. Ör: `/sinyal BTC 4` veya `/sinyal`\n"
-                 "`/stats` \\- Son 48 saatlik sinyal istatistiklerini gösterir\\.\n"
+                 "`/bilgi` \\- Bot hakkında detaylı bilgi alırsınız\\.\n"
                  "`/top30` \\- CoinMarketCap'ten en iyi 30 coini listeler\\.\n"
                  "`/exit` \\- Hesabınızın sinyal yetkisini kaldırır\\.\n")
     await update.message.reply_text(help_text, parse_mode='MarkdownV2')
+
+
+async def bilgi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Düzgün çalışan ve MarkdownV2 kaçış karakterleri eklenmiş versiyon
+    bilgi_text = (
+        "ℹ️ *Bot Hakkında Bilgi*\n\n"
+        "Bu bot, Binance borsasındaki USDT pariteleri için teknik analiz göstergelerini kullanarak potansiyel alım/satım sinyalleri üretir\\. "
+        "Sinyaller, ATR'ye dayalı risk yönetimi seviyeleri ile birlikte sunulur\\.\n\n"
+        "Zamanlanmış sinyaller Türkiye saatine göre günde dört kez gönderilir\\. "
+        "Ayrıca `/sinyal` komutu ile anlık olarak da sinyal talep edebilirsiniz\\.\n\n"
+        "Unutmayın, bu sinyaller yatırım tavsiyesi değildir ve sadece eğitim amaçlıdır\\. "
+        "Her zaman kendi araştırmanızı yapın ve riskinizi yönetin\\."
+    )
+    await update.message.reply_text(bilgi_text, parse_mode='MarkdownV2')
 
 
 async def top30_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -492,8 +480,9 @@ async def main_async():
 
     app.add_handler(CommandHandler('start', start))
     app.add_handler(CommandHandler(['sinyal', 'signal'], sinyal_command))
-    app.add_handler(CommandHandler(['stats', 'istatistik'], stats_command))
+    # stats handler'ı KALDIRILDI
     app.add_handler(CommandHandler(['help', 'yardim'], help_command))
+    app.add_handler(CommandHandler('bilgi', bilgi_command))  # Yeni bilgi komutu eklendi
     app.add_handler(CommandHandler('top30', top30_command))
     app.add_handler(CommandHandler('exit', exit_command))
 
@@ -524,3 +513,5 @@ if __name__ == '__main__':
         asyncio.run(main_async())
     except KeyboardInterrupt:
         logging.info("Program kullanıcı tarafından sonlandırıldı.")
+
+        #güncellendi
