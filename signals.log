@@ -1,0 +1,822 @@
+2025-07-03 15:07:55,732 - Veritabanı başlatılırken kritik hata: name 'pretrained_users' is not defined
+Traceback (most recent call last):
+  File "E:\SmartKoinBot\SmartKoinBot.py", line 138, in init_db
+    for user_id, chat_id in pretrained_users:
+                            ^^^^^^^^^^^^^^^^
+NameError: name 'pretrained_users' is not defined
+2025-07-03 15:07:57,198 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getMe "HTTP/1.1 200 OK"
+2025-07-03 15:07:57,248 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/deleteWebhook "HTTP/1.1 200 OK"
+2025-07-03 15:07:57,257 - Scheduler started
+2025-07-03 15:07:57,257 - Application started
+2025-07-03 15:08:07,432 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:08:17,476 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:08:27,541 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:08:37,589 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:08:47,651 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:08:57,703 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:09:07,755 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:09:17,815 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:09:27,858 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:09:37,914 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:09:47,971 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:09:58,020 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:08,078 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:18,142 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:28,201 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:38,245 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:48,309 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:55,427 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:10:55,433 - Binance piyasa verileri çekiliyor... (Deneme 1/3)
+2025-07-03 15:11:05,338 - Binance piyasa verileri başarıyla çekildi ve önbelleklendi.
+2025-07-03 15:11:05,346 - Binance Top 20 coin verisi çekiliyor... (Deneme 1/3)
+2025-07-03 15:11:05,483 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:11:08,182 - Binance ticker verileri başarıyla çekildi ve önbelleklendi.
+2025-07-03 15:11:08,185 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-03 15:11:08,185 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-03 15:11:08,185 - Rastgele sinyal denemesi: DOGE/USDT (1h). Chat ID: 986610683
+2025-07-03 15:11:08,185 - Fiyat verisi çekiliyor: DOGE/USDT 1h (limit: 100)
+2025-07-03 15:11:15,545 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:11:24,998 - Veri çekme ve önbelleğe alma başarılı: DOGE/USDT_1h
+2025-07-03 15:11:25,022 - Şablon tabanlı yorum üretildi: MACD aşağı kesişme yaptı, düşüş momentumu güçlü.
+2025-07-03 15:11:25,036 - Sinyal kaydedildi: DOGE/USDT - Kısa
+2025-07-03 15:11:25,036 - Sinyal başarıyla üretildi: DOGE/USDT - Kısa
+2025-07-03 15:11:25,250 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:11:25,252 - 🔴 Kısa Sinyal | #DOGEUSDT
+🕒 Zaman Dilimi: 1h
+💵 Fiyat: 0.17395000 USDT
+🎯 Kâr Al: 0.16674429 USDT
+🛡️ Zarar Durdur: 0.17755286 USDT
+🧠 Yorum: MACD aşağı kesişme yaptı, düşüş momentumu güçlü.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-03 15:11:25,252 - Rastgele sinyal gönderildi: DOGE/USDT (1h). Chat ID: 986610683
+2025-07-03 15:11:25,596 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:11:35,643 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:11:45,707 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:11:55,753 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:05,814 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:07,516 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:07,688 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 400 Bad Request"
+2025-07-03 15:12:07,688 - No error handlers are registered, logging exception.
+Traceback (most recent call last):
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\ext\_application.py", line 1298, in process_update
+    await coroutine
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\ext\_handlers\basehandler.py", line 158, in handle_update
+    return await self.callback(update, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\SmartKoinBot.py", line 977, in help_command
+    await update.message.reply_text(help_text, parse_mode='MarkdownV2')
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\_message.py", line 1775, in reply_text
+    return await self.get_bot().send_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\ext\_extbot.py", line 2977, in send_message
+    return await super().send_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\_bot.py", line 1091, in send_message
+    return await self._send_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\ext\_extbot.py", line 618, in _send_message
+    result = await super()._send_message(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\_bot.py", line 803, in _send_message
+    result = await self._post(
+             ^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\SmartKoinBot\.venv\Lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Can't parse entities: character '(' is reserved and must be escaped with the preceding '\'
+2025-07-03 15:12:17,568 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:27,629 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:37,671 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:47,741 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:12:57,795 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:13:07,842 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:13:17,900 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:13:27,956 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:13:38,032 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:13:48,085 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:13:58,144 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:14:08,199 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:14:18,346 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:14:28,405 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:14:38,472 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:14:48,527 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:14:58,582 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:15:08,636 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:15:18,690 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:15:28,743 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:15:38,796 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:15:48,854 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:15:58,904 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:16:08,960 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:16:19,015 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:16:29,072 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:16:39,124 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:16:49,177 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:16:59,241 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:17:09,288 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:17:19,354 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:17:29,397 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:17:39,462 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:17:44,948 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:17:44,950 - Application is stopping. This might take a moment.
+2025-07-03 15:17:44,950 - Scheduler has been shut down
+2025-07-03 15:17:44,950 - Application.stop() complete
+2025-07-03 15:17:44,951 - Bot ana döngüsünde beklenmeyen kritik hata: Event loop is closed
+Traceback (most recent call last):
+  File "E:\SmartKoinBot\SmartKoinBot.py", line 1091, in main
+    await update.message.reply_text(
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 629, in run_until_complete
+    self._check_closed()
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 520, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2025-07-03 15:17:45,142 - Task was destroyed but it is pending!
+task: <Task pending name='Task-4' coro=<send_periodic_signals() running at E:\SmartKoinBot\SmartKoinBot.py:746> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-07-03 15:17:45,292 - binance requires to release all resources with an explicit call to the .close() coroutine. If you are using the exchange instance with async coroutines, add `await exchange.close()` to your code into a place when you're done with the exchange and don't need the exchange instance anymore (at the end of your async coroutine).
+2025-07-03 15:17:45,292 - Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000135461C61D0>
+2025-07-03 15:27:56,646 - Veritabanı başlatma tamamlandı.
+2025-07-03 15:27:57,998 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getMe "HTTP/1.1 200 OK"
+2025-07-03 15:27:58,039 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/deleteWebhook "HTTP/1.1 200 OK"
+2025-07-03 15:27:58,039 - Scheduler started
+2025-07-03 15:27:58,055 - Application started
+2025-07-03 15:28:08,211 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:18,278 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:28,339 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:29,587 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:29,784 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:28:29,786 - Help komutu kullanıldı. Chat ID: 986610683
+2025-07-03 15:28:36,475 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:36,663 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:28:36,663 - Aktif kullanıcı listesi gönderildi. Chat ID: 986610683
+2025-07-03 15:28:42,360 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:42,362 - Binance piyasa verileri çekiliyor... (Deneme 1/3)
+2025-07-03 15:28:52,721 - Binance piyasa verileri başarıyla çekildi ve önbelleklendi.
+2025-07-03 15:28:52,721 - Binance Top 20 coin verisi çekiliyor... (Deneme 1/3)
+2025-07-03 15:28:52,721 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:28:55,366 - Binance ticker verileri başarıyla çekildi ve önbelleklendi.
+2025-07-03 15:28:55,366 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-03 15:28:55,366 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-03 15:28:55,366 - Rastgele sinyal denemesi: XRP/USDT (2h). Chat ID: 986610683
+2025-07-03 15:28:55,366 - Fiyat verisi çekiliyor: XRP/USDT 2h (limit: 100)
+2025-07-03 15:29:02,774 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:07,654 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:11,081 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:12,224 - Veri çekme ve önbelleğe alma başarılı: XRP/USDT_2h
+2025-07-03 15:29:12,258 - Şablon tabanlı yorum üretildi: Williams %R aşırı alım bölgesinde, düzeltme sinyali.
+2025-07-03 15:29:12,277 - Sinyal kaydedildi: XRP/USDT - Kısa
+2025-07-03 15:29:12,279 - Sinyal başarıyla üretildi: XRP/USDT - Kısa
+2025-07-03 15:29:12,524 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:29:12,524 - 🔴 Kısa Sinyal | #XRPUSDT
+🕒 Zaman Dilimi: 2h
+💵 Fiyat: 2.30400000 USDT
+🎯 Kâr Al: 2.19291429 USDT
+🛡️ Zarar Durdur: 2.35954286 USDT
+🧠 Yorum: Williams %R aşırı alım bölgesinde, düzeltme sinyali.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-03 15:29:12,524 - Rastgele sinyal gönderildi: XRP/USDT (2h). Chat ID: 986610683
+2025-07-03 15:29:12,632 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:29:12,634 - Help komutu kullanıldı. Chat ID: 986610683
+2025-07-03 15:29:12,739 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:29:12,741 - Bilgi komutu kullanıldı. Chat ID: 986610683
+2025-07-03 15:29:16,505 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:16,514 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-03 15:29:16,516 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-03 15:29:16,516 - Rastgele sinyal denemesi: BTC/USDT (6h). Chat ID: 986610683
+2025-07-03 15:29:16,516 - Fiyat verisi çekiliyor: BTC/USDT 6h (limit: 100)
+2025-07-03 15:29:17,716 - Veri çekme ve önbelleğe alma başarılı: BTC/USDT_6h
+2025-07-03 15:29:17,738 - Şablon tabanlı yorum üretildi: Stochastic aşırı alım bölgesinde, satış baskısı artıyor.
+2025-07-03 15:29:17,755 - Sinyal kaydedildi: BTC/USDT - Kısa
+2025-07-03 15:29:17,755 - Sinyal başarıyla üretildi: BTC/USDT - Kısa
+2025-07-03 15:29:18,090 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:29:18,091 - 🔴 Kısa Sinyal | #BTCUSDT
+🕒 Zaman Dilimi: 6h
+💵 Fiyat: 109570.01000000 USDT
+🎯 Kâr Al: 105109.89571429 USDT
+🛡️ Zarar Durdur: 111800.06714286 USDT
+🧠 Yorum: Stochastic aşırı alım bölgesinde, satış baskısı artıyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-03 15:29:18,091 - Rastgele sinyal gönderildi: BTC/USDT (6h). Chat ID: 986610683
+2025-07-03 15:29:20,973 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:20,981 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-03 15:29:20,984 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-03 15:29:20,984 - Rastgele sinyal denemesi: XRP/USDT (1h). Chat ID: 986610683
+2025-07-03 15:29:20,984 - Fiyat verisi çekiliyor: XRP/USDT 1h (limit: 100)
+2025-07-03 15:29:22,181 - Veri çekme ve önbelleğe alma başarılı: XRP/USDT_1h
+2025-07-03 15:29:22,197 - Şablon tabanlı yorum üretildi: Williams %R aşırı alım bölgesinde, düzeltme sinyali.
+2025-07-03 15:29:22,202 - Sinyal kaydedildi: XRP/USDT - Kısa
+2025-07-03 15:29:22,202 - Sinyal başarıyla üretildi: XRP/USDT - Kısa
+2025-07-03 15:29:22,309 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/sendMessage "HTTP/1.1 200 OK"
+2025-07-03 15:29:22,320 - 🔴 Kısa Sinyal | #XRPUSDT
+🕒 Zaman Dilimi: 1h
+💵 Fiyat: 2.30480000 USDT
+🎯 Kâr Al: 2.23597143 USDT
+🛡️ Zarar Durdur: 2.33921429 USDT
+🧠 Yorum: Williams %R aşırı alım bölgesinde, düzeltme sinyali.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-03 15:29:22,320 - Rastgele sinyal gönderildi: XRP/USDT (1h). Chat ID: 986610683
+2025-07-03 15:29:31,081 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:41,137 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:29:51,195 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:01,246 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:11,342 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:21,397 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:31,494 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:41,565 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:49,823 - HTTP Request: POST https://api.telegram.org/bot8047440107:AAH8nxwtmtYrb1dMKB4KXBKeAoTlj76Zm4U/getUpdates "HTTP/1.1 200 OK"
+2025-07-03 15:30:49,823 - Application is stopping. This might take a moment.
+2025-07-03 15:30:49,823 - Scheduler has been shut down
+2025-07-03 15:30:49,823 - Application.stop() complete
+2025-07-03 15:30:49,830 - Bot ana döngüsünde beklenmeyen kritik hata: Event loop is closed
+Traceback (most recent call last):
+  File "E:\SmartKoinBot\SmartKoinBot.py", line 1037, in main
+    loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 629, in run_until_complete
+    self._check_closed()
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 520, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2025-07-03 15:30:50,068 - Task was destroyed but it is pending!
+task: <Task pending name='Task-4' coro=<send_periodic_signals() running at E:\SmartKoinBot\SmartKoinBot.py:712> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-07-03 15:30:50,220 - binance requires to release all resources with an explicit call to the .close() coroutine. If you are using the exchange instance with async coroutines, add `await exchange.close()` to your code into a place when you're done with the exchange and don't need the exchange instance anymore (at the end of your async coroutine).
+2025-07-03 15:30:50,220 - Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002315E719FD0>
+2025-07-14 21:47:54,759 - signals tablosuna 'outcome_timestamp' sütunu eklendi.
+2025-07-14 21:47:54,761 - Veritabanı başlatma ve güncelleme tamamlandı.
+2025-07-14 21:47:56,693 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getMe "HTTP/1.1 200 OK"
+2025-07-14 21:47:56,749 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/deleteWebhook "HTTP/1.1 200 OK"
+2025-07-14 21:47:56,751 - Scheduler started
+2025-07-14 21:47:56,751 - Application started
+2025-07-14 21:48:07,008 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:48:17,083 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:48:26,263 - Sinyal takip mekanizması başlatıldı.
+2025-07-14 21:48:27,034 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:48:27,037 - Binance piyasa verileri çekiliyor... (Deneme 1/3)
+2025-07-14 21:48:37,084 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:48:42,228 - Binance piyasa verileri başarıyla çekildi ve önbelleklendi.
+2025-07-14 21:48:42,228 - Binance Top 20 coin verisi çekiliyor... (Deneme 1/3)
+2025-07-14 21:48:44,376 - Binance ticker verileri başarıyla çekildi ve önbelleklendi.
+2025-07-14 21:48:44,376 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-14 21:48:44,376 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-14 21:48:44,376 - Rastgele sinyal denemesi: TRUMP/USDT (1h). Chat ID: 986610683
+2025-07-14 21:48:44,376 - Fiyat verisi çekiliyor: TRUMP/USDT 1h (limit: 100)
+2025-07-14 21:48:47,182 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:48:49,271 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:48:59,352 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:06,265 - Veri çekme ve önbelleğe alma başarılı: TRUMP/USDT_1h
+2025-07-14 21:49:06,295 - Sinyal veritabanına kaydedildi: TRUMP/USDT - Uzun (ID: 393)
+2025-07-14 21:49:06,793 - Sinyal 393 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 21:49:06,793 - Sinyal başarıyla üretildi ve loglandı: TRUMP/USDT - Uzun
+2025-07-14 21:49:07,084 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:49:07,085 - 🟢 Uzun Sinyal | #TRUMPUSDT
+🕒 Zaman Dilimi: 1h
+💵 Fiyat: 9.39000000 USDT
+🎯 Kâr Al: 9.84428571 USDT
+🛡️ Zarar Durdur: 9.16285714 USDT
+🧠 Yorum: RSI aşırı satım bölgesinde, toparlanma bekleniyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-14 21:49:07,085 - Rastgele sinyal gönderildi: TRUMP/USDT (1h). Chat ID: 986610683
+2025-07-14 21:49:07,189 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:49:07,190 - Bilgi komutu kullanıldı. Chat ID: 986610683
+2025-07-14 21:49:09,414 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:19,533 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:20,429 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:20,861 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:49:20,861 - Geçersiz zaman dilimi argümanı: 3. Chat ID: 986610683
+2025-07-14 21:49:23,232 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:23,244 - Belirli coin için sinyal denemesi: TRUMP/USDT (2h). Chat ID: 986610683
+2025-07-14 21:49:23,244 - Fiyat verisi çekiliyor: TRUMP/USDT 2h (limit: 100)
+2025-07-14 21:49:29,543 - Veri çekme ve önbelleğe alma başarılı: TRUMP/USDT_2h
+2025-07-14 21:49:29,568 - Sinyal veritabanına kaydedildi: TRUMP/USDT - Uzun (ID: 394)
+2025-07-14 21:49:29,611 - Sinyal 394 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 21:49:29,611 - Sinyal başarıyla üretildi ve loglandı: TRUMP/USDT - Uzun
+2025-07-14 21:49:29,868 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:49:29,877 - 🟢 Uzun Sinyal | #TRUMPUSDT
+🕒 Zaman Dilimi: 2h
+💵 Fiyat: 9.38000000 USDT
+🎯 Kâr Al: 9.92428571 USDT
+🛡️ Zarar Durdur: 9.10785714 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-14 21:49:29,877 - Sinyal gönderildi: TRUMP/USDT (2h). Chat ID: 986610683
+2025-07-14 21:49:33,327 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:40,843 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:40,847 - Belirli coin için sinyal denemesi: TRUMP/USDT (4h). Chat ID: 986610683
+2025-07-14 21:49:40,847 - Fiyat verisi çekiliyor: TRUMP/USDT 4h (limit: 100)
+2025-07-14 21:49:42,028 - Veri çekme ve önbelleğe alma başarılı: TRUMP/USDT_4h
+2025-07-14 21:49:42,068 - Sinyal veritabanına kaydedildi: TRUMP/USDT - Uzun (ID: 395)
+2025-07-14 21:49:42,111 - Sinyal 395 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 21:49:42,111 - Sinyal başarıyla üretildi ve loglandı: TRUMP/USDT - Uzun
+2025-07-14 21:49:42,473 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:49:42,473 - 🟢 Uzun Sinyal | #TRUMPUSDT
+🕒 Zaman Dilimi: 4h
+💵 Fiyat: 9.38000000 USDT
+🎯 Kâr Al: 10.09571429 USDT
+🛡️ Zarar Durdur: 9.02214286 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-14 21:49:42,473 - Sinyal gönderildi: TRUMP/USDT (4h). Chat ID: 986610683
+2025-07-14 21:49:45,243 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:49:45,253 - Belirli coin için sinyal denemesi: TRUMP/USDT (6h). Chat ID: 986610683
+2025-07-14 21:49:45,255 - Fiyat verisi çekiliyor: TRUMP/USDT 6h (limit: 100)
+2025-07-14 21:49:46,459 - Veri çekme ve önbelleğe alma başarılı: TRUMP/USDT_6h
+2025-07-14 21:49:46,582 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:49:46,585 - Sinyal üretilemedi: TRUMP/USDT (6h). Chat ID: 986610683
+2025-07-14 21:49:55,340 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:50:05,453 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:50:15,592 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:50:25,739 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:50:35,807 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:50:45,861 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:50:56,029 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:51:06,076 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:51:16,191 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:51:26,250 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:51:36,304 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:51:46,364 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:51:56,433 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:00,948 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:00,959 - Belirli coin için sinyal denemesi: ADA/USDT (6h). Chat ID: 986610683
+2025-07-14 21:52:00,959 - Fiyat verisi çekiliyor: ADA/USDT 6h (limit: 100)
+2025-07-14 21:52:02,255 - Veri çekme ve önbelleğe alma başarılı: ADA/USDT_6h
+2025-07-14 21:52:02,509 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:52:02,509 - Sinyal üretilemedi: ADA/USDT (6h). Chat ID: 986610683
+2025-07-14 21:52:04,434 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:04,443 - Belirli coin için sinyal denemesi: ADA/USDT (1h). Chat ID: 986610683
+2025-07-14 21:52:04,443 - Fiyat verisi çekiliyor: ADA/USDT 1h (limit: 100)
+2025-07-14 21:52:05,636 - Veri çekme ve önbelleğe alma başarılı: ADA/USDT_1h
+2025-07-14 21:52:05,682 - Sinyal veritabanına kaydedildi: ADA/USDT - Uzun (ID: 396)
+2025-07-14 21:52:05,729 - Sinyal 396 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 21:52:05,729 - Sinyal başarıyla üretildi ve loglandı: ADA/USDT - Uzun
+2025-07-14 21:52:05,872 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:52:05,872 - 🟢 Uzun Sinyal | #ADAUSDT
+🕒 Zaman Dilimi: 1h
+💵 Fiyat: 0.73160000 USDT
+🎯 Kâr Al: 0.77387857 USDT
+🛡️ Zarar Durdur: 0.71046071 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-14 21:52:05,872 - Sinyal gönderildi: ADA/USDT (1h). Chat ID: 986610683
+2025-07-14 21:52:06,248 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:06,256 - Belirli coin için sinyal denemesi: ADA/USDT (2h). Chat ID: 986610683
+2025-07-14 21:52:06,256 - Fiyat verisi çekiliyor: ADA/USDT 2h (limit: 100)
+2025-07-14 21:52:07,442 - Veri çekme ve önbelleğe alma başarılı: ADA/USDT_2h
+2025-07-14 21:52:07,462 - Sinyal veritabanına kaydedildi: ADA/USDT - Kısa (ID: 397)
+2025-07-14 21:52:07,513 - Sinyal 397 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 21:52:07,513 - Sinyal başarıyla üretildi ve loglandı: ADA/USDT - Kısa
+2025-07-14 21:52:07,627 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:52:07,627 - 🔴 Kısa Sinyal | #ADAUSDT
+🕒 Zaman Dilimi: 2h
+💵 Fiyat: 0.73160000 USDT
+🎯 Kâr Al: 0.67828571 USDT
+🛡️ Zarar Durdur: 0.75825714 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-14 21:52:07,627 - Sinyal gönderildi: ADA/USDT (2h). Chat ID: 986610683
+2025-07-14 21:52:09,441 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:09,534 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:52:09,535 - İstenen coin (DADA) bulunamadı. Chat ID: 986610683
+2025-07-14 21:52:12,862 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:12,867 - Belirli coin için sinyal denemesi: ADA/USDT (4h). Chat ID: 986610683
+2025-07-14 21:52:12,869 - Fiyat verisi çekiliyor: ADA/USDT 4h (limit: 100)
+2025-07-14 21:52:14,047 - Veri çekme ve önbelleğe alma başarılı: ADA/USDT_4h
+2025-07-14 21:52:14,090 - Sinyal veritabanına kaydedildi: ADA/USDT - Uzun (ID: 398)
+2025-07-14 21:52:14,134 - Sinyal 398 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 21:52:14,134 - Sinyal başarıyla üretildi ve loglandı: ADA/USDT - Uzun
+2025-07-14 21:52:14,258 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 21:52:14,268 - 🟢 Uzun Sinyal | #ADAUSDT
+🕒 Zaman Dilimi: 4h
+💵 Fiyat: 0.73150000 USDT
+🎯 Kâr Al: 0.80512857 USDT
+🛡️ Zarar Durdur: 0.69468571 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 2.00
+2025-07-14 21:52:14,268 - Sinyal gönderildi: ADA/USDT (4h). Chat ID: 986610683
+2025-07-14 21:52:22,912 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:32,984 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:43,038 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:52:53,105 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:53:03,175 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:53:13,242 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:53:23,347 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:53:33,497 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:53:43,627 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:53:53,699 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:54:03,839 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:54:13,892 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:54:23,949 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:54:34,057 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:54:44,115 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:54:54,184 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:55:04,240 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:55:14,294 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:55:24,352 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:55:34,414 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:55:44,473 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:55:54,531 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:56:04,589 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:56:14,649 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:56:24,714 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:56:34,773 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:56:44,842 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:56:54,898 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:57:04,982 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:57:15,038 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:57:25,095 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:57:35,171 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:57:45,222 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:57:55,292 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:58:05,346 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:58:15,526 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:58:25,583 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:58:35,643 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:58:45,737 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:58:55,796 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:59:05,885 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:59:15,970 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:59:26,027 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:59:36,176 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:59:46,234 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 21:59:56,295 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:00:06,351 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:00:16,459 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:00:26,514 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:00:36,573 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:00:46,650 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:00:56,705 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:01:06,799 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:01:16,843 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:01:26,905 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:01:36,970 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:01:47,103 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:01:57,221 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:02:07,268 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:02:17,344 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:02:27,397 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:02:37,469 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:02:47,540 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:02:57,594 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:03:07,673 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:03:17,735 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:03:27,790 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:03:37,884 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:03:48,130 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:03:58,259 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:04:08,320 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:04:18,363 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:04:28,433 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:04:38,491 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:04:48,602 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:04:58,670 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:05:08,733 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:05:18,851 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:05:28,948 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:05:39,000 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:05:49,161 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:05:59,217 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:06:09,349 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:06:19,489 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:06:29,631 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:06:39,740 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:06:49,797 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:06:59,901 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:07:09,952 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:07:20,017 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:07:30,064 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:07:40,149 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:07:50,208 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:08:00,265 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:08:10,374 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:08:20,422 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:08:30,483 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:08:40,546 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:08:50,598 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:09:00,657 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:09:10,716 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:09:20,776 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:09:30,831 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:09:40,888 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:09:50,983 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:10:01,073 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:10:11,129 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:10:21,187 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:10:31,229 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:10:41,339 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:10:51,397 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:11:01,484 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:11:11,537 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:11:21,595 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:11:31,712 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:11:41,769 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:11:51,832 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:12:01,908 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:12:12,018 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:12:22,178 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:12:32,235 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:12:42,357 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:12:52,430 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:13:02,487 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:13:12,579 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:13:22,636 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:13:32,695 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:13:42,756 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:13:52,815 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:14:02,944 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:14:13,028 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:14:23,078 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:14:33,146 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:14:43,214 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:14:53,270 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:15:03,365 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:15:13,416 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:15:23,486 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:15:33,541 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:15:43,594 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:15:53,671 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:16:03,731 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:16:13,797 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:16:23,850 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:16:33,916 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:16:43,972 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:16:54,032 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:17:04,091 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:17:14,182 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:17:24,263 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:17:34,328 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:17:44,382 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:17:54,450 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:18:04,553 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:18:14,642 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:18:24,770 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:18:34,834 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:18:44,978 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:18:55,038 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:19:05,096 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:19:15,151 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:19:25,208 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:19:35,369 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:19:45,427 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:19:55,486 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:20:05,542 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:20:15,609 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:20:25,724 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:20:35,945 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:20:46,003 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:20:56,147 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:21:06,205 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:21:16,319 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:21:26,370 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:21:36,491 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:21:46,549 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:21:56,619 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:22:06,683 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:22:16,791 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:22:26,848 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:22:37,015 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:22:47,069 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:22:57,187 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:23:07,323 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:23:17,463 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:23:27,519 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:23:37,576 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:23:47,638 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:23:57,704 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:24:07,763 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:24:17,819 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:24:27,886 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:24:37,948 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:24:48,002 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:24:58,064 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:25:08,117 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:25:18,176 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:25:28,236 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:25:38,291 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:25:48,350 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:25:58,402 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:26:08,460 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:26:18,524 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:26:28,580 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:26:38,639 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:26:48,693 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:26:58,751 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:27:08,873 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:27:18,928 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:27:29,065 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:27:39,122 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:27:49,178 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:27:59,273 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:28:09,353 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:28:19,410 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:28:29,468 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:28:39,524 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:28:49,584 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:28:59,691 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:29:09,753 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:29:19,901 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:29:30,001 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:29:40,060 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:29:50,186 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:00,243 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:10,297 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:20,386 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:30,440 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:40,494 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:50,553 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:53,929 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:30:53,931 - Application is stopping. This might take a moment.
+2025-07-14 22:30:53,931 - Scheduler has been shut down
+2025-07-14 22:30:53,932 - Application.stop() complete
+2025-07-14 22:30:53,933 - Bot ana döngüsünde beklenmeyen kritik hata: Event loop is closed
+Traceback (most recent call last):
+  File "E:\SmartKoinBot\SmartKoinBot.py", line 1172, in main
+    loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 629, in run_until_complete
+    self._check_closed()
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 520, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2025-07-14 22:30:54,338 - Task was destroyed but it is pending!
+task: <Task pending name='Task-4' coro=<send_periodic_signals() running at E:\SmartKoinBot\SmartKoinBot.py:753> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-07-14 22:30:54,338 - Task was destroyed but it is pending!
+task: <Task pending name='Task-5' coro=<monitor_active_signals() running at E:\SmartKoinBot\SmartKoinBot.py:867> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-07-14 22:30:54,456 - binance requires to release all resources with an explicit call to the .close() coroutine. If you are using the exchange instance with async coroutines, add `await exchange.close()` to your code into a place when you're done with the exchange and don't need the exchange instance anymore (at the end of your async coroutine).
+2025-07-14 22:30:54,457 - Unclosed connector
+connections: ['[(<aiohttp.client_proto.ResponseHandler object at 0x0000021BCEF9D080>, 192959.296)]']
+connector: <aiohttp.connector.TCPConnector object at 0x0000021BC732A350>
+2025-07-14 22:30:58,652 - Veritabanı başlatma ve güncelleme tamamlandı.
+2025-07-14 22:31:00,665 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getMe "HTTP/1.1 200 OK"
+2025-07-14 22:31:00,747 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/deleteWebhook "HTTP/1.1 200 OK"
+2025-07-14 22:31:00,749 - Scheduler started
+2025-07-14 22:31:00,749 - Application started
+2025-07-14 22:31:10,945 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:31:21,004 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:31:27,768 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:31:27,768 - Binance piyasa verileri çekiliyor... (Deneme 1/3)
+2025-07-14 22:31:30,375 - Sinyal takip mekanizması başlatıldı.
+2025-07-14 22:31:37,815 - Binance piyasa verileri başarıyla çekildi ve önbelleklendi.
+2025-07-14 22:31:37,817 - Binance Top 20 coin verisi çekiliyor... (Deneme 1/3)
+2025-07-14 22:31:37,861 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:31:47,956 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:31:55,656 - Binance ticker verileri başarıyla çekildi ve önbelleklendi.
+2025-07-14 22:31:55,658 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-14 22:31:55,658 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-14 22:31:55,658 - Rastgele sinyal denemesi: WIF/USDT (4h). Chat ID: 986610683
+2025-07-14 22:31:55,658 - Fiyat verisi çekiliyor: WIF/USDT 4h (limit: 100)
+2025-07-14 22:31:58,017 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:32:08,120 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:32:13,716 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:32:17,586 - Veri çekme ve önbelleğe alma başarılı: WIF/USDT_4h
+2025-07-14 22:32:17,632 - Sinyal veritabanına kaydedildi: WIF/USDT - Uzun (ID: 399)
+2025-07-14 22:32:18,033 - Sinyal 399 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:32:18,033 - Sinyal başarıyla üretildi ve loglandı: WIF/USDT - Uzun
+2025-07-14 22:32:18,311 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:32:18,311 - 🟢 Uzun Sinyal | #WIFUSDT
+🕒 Zaman Dilimi: 4h
+💵 Fiyat: 1.01300000 USDT
+🎯 Kâr Al: 1.01310130 USDT
+🛡️ Zarar Durdur: 1.01289870 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 1.00
+2025-07-14 22:32:18,311 - Rastgele sinyal gönderildi: WIF/USDT (4h). Chat ID: 986610683
+2025-07-14 22:32:18,468 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:32:18,470 - Help komutu kullanıldı. Chat ID: 986610683
+2025-07-14 22:32:23,767 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:32:33,838 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:32:43,901 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:32:53,956 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:33:04,020 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:33:14,145 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:33:24,268 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:33:34,440 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:33:44,500 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:33:55,209 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:34:05,390 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:34:15,444 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:34:25,552 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:34:35,610 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:34:45,670 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:34:55,727 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:05,788 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:08,102 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:08,104 - Binance Top 20 coin verisi çekiliyor... (Deneme 1/3)
+2025-07-14 22:35:09,201 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:09,839 - Binance ticker verileri başarıyla çekildi ve önbelleklendi.
+2025-07-14 22:35:09,842 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-14 22:35:09,842 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-14 22:35:09,842 - Rastgele sinyal denemesi: BNB/USDT (4h). Chat ID: 986610683
+2025-07-14 22:35:09,842 - Fiyat verisi çekiliyor: BNB/USDT 4h (limit: 100)
+2025-07-14 22:35:11,375 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:21,434 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:31,499 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:31,785 - Veri çekme ve önbelleğe alma başarılı: BNB/USDT_4h
+2025-07-14 22:35:31,827 - Sinyal veritabanına kaydedildi: BNB/USDT - Kısa (ID: 400)
+2025-07-14 22:35:31,881 - Sinyal 400 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:35:31,881 - Sinyal başarıyla üretildi ve loglandı: BNB/USDT - Kısa
+2025-07-14 22:35:32,649 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:35:32,649 - 🔴 Kısa Sinyal | #BNBUSDT
+🕒 Zaman Dilimi: 4h
+💵 Fiyat: 691.07000000 USDT
+🎯 Kâr Al: 691.00089300 USDT
+🛡️ Zarar Durdur: 691.13910700 USDT
+🧠 Yorum: MACD aşağı kesişme yaptı, düşüş momentumu güçlü.
+📊 Risk-Ödül Oranı: 1.00
+2025-07-14 22:35:32,649 - Rastgele sinyal gönderildi: BNB/USDT (4h). Chat ID: 986610683
+2025-07-14 22:35:32,657 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-14 22:35:32,659 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-14 22:35:32,659 - Rastgele sinyal denemesi: DOGE/USDT (4h). Chat ID: 986610683
+2025-07-14 22:35:32,659 - Fiyat verisi çekiliyor: DOGE/USDT 4h (limit: 100)
+2025-07-14 22:35:33,835 - Veri çekme ve önbelleğe alma başarılı: DOGE/USDT_4h
+2025-07-14 22:35:33,858 - Sinyal veritabanına kaydedildi: DOGE/USDT - Kısa (ID: 401)
+2025-07-14 22:35:33,899 - Sinyal 401 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:35:33,901 - Sinyal başarıyla üretildi ve loglandı: DOGE/USDT - Kısa
+2025-07-14 22:35:34,064 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:35:34,066 - 🔴 Kısa Sinyal | #DOGEUSDT
+🕒 Zaman Dilimi: 4h
+💵 Fiyat: 0.19855000 USDT
+🎯 Kâr Al: 0.19853014 USDT
+🛡️ Zarar Durdur: 0.19856986 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 1.00
+2025-07-14 22:35:34,066 - Rastgele sinyal gönderildi: DOGE/USDT (4h). Chat ID: 986610683
+2025-07-14 22:35:34,073 - Dinamik Hacim Eşiği: 10,000,000.00 USDT
+2025-07-14 22:35:34,075 - Seçilen Top 20 Binance Çifti Sayısı: 20
+2025-07-14 22:35:34,075 - Rastgele sinyal denemesi: SUI/USDT (2h). Chat ID: 986610683
+2025-07-14 22:35:34,075 - Fiyat verisi çekiliyor: SUI/USDT 2h (limit: 100)
+2025-07-14 22:35:35,302 - Veri çekme ve önbelleğe alma başarılı: SUI/USDT_2h
+2025-07-14 22:35:35,317 - Rastgele sinyal denemesi: SEI/USDT (2h). Chat ID: 986610683
+2025-07-14 22:35:35,317 - Fiyat verisi çekiliyor: SEI/USDT 2h (limit: 100)
+2025-07-14 22:35:36,493 - Veri çekme ve önbelleğe alma başarılı: SEI/USDT_2h
+2025-07-14 22:35:36,529 - Sinyal veritabanına kaydedildi: SEI/USDT - Uzun (ID: 402)
+2025-07-14 22:35:36,571 - Sinyal 402 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:35:36,571 - Sinyal başarıyla üretildi ve loglandı: SEI/USDT - Uzun
+2025-07-14 22:35:36,695 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:35:36,695 - 🟢 Uzun Sinyal | #SEIUSDT
+🕒 Zaman Dilimi: 2h
+💵 Fiyat: 0.33190000 USDT
+🎯 Kâr Al: 0.33193319 USDT
+🛡️ Zarar Durdur: 0.33186681 USDT
+🧠 Yorum: Teknik göstergeler sinyali destekliyor.
+📊 Risk-Ödül Oranı: 1.00
+2025-07-14 22:35:36,695 - Rastgele sinyal gönderildi: SEI/USDT (2h). Chat ID: 986610683
+2025-07-14 22:35:41,563 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:35:51,624 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:36:01,797 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:36:11,857 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:36:21,969 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:36:32,150 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:36:39,982 - Sinyal durumu güncellendi: ID 399 -> TP Oldu
+2025-07-14 22:36:40,030 - Sinyal 399 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:36:40,319 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:36:40,341 - Sinyal durumu güncellendi: ID 401 -> SL Oldu
+2025-07-14 22:36:40,411 - Sinyal 401 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:36:40,521 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:36:40,544 - Sinyal durumu güncellendi: ID 402 -> TP Oldu
+2025-07-14 22:36:40,611 - Sinyal 402 Excel'e kaydedildi/güncellendi: signals_2025-07.xlsx
+2025-07-14 22:36:40,713 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/sendMessage "HTTP/1.1 200 OK"
+2025-07-14 22:36:42,258 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:36:52,317 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:37:02,408 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:37:12,470 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:37:22,611 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:37:32,971 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:37:43,027 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:37:53,091 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:38:03,205 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:38:13,340 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:38:23,445 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:38:33,558 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:38:43,620 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:38:53,730 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:39:03,790 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:39:13,905 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:39:18,248 - HTTP Request: POST https://api.telegram.org/bot8024045828:AAFrE96GPjk287IRnhUHK7mocxr37wd6j1s/getUpdates "HTTP/1.1 200 OK"
+2025-07-14 22:39:18,249 - Application is stopping. This might take a moment.
+2025-07-14 22:39:18,249 - Scheduler has been shut down
+2025-07-14 22:39:18,249 - Application.stop() complete
+2025-07-14 22:39:18,250 - Bot ana döngüsünde beklenmeyen kritik hata: Event loop is closed
+Traceback (most recent call last):
+  File "E:\SmartKoinBot\SmartKoinBot.py", line 1179, in main
+    loop.run_until_complete(app.run_polling(allowed_updates=Update.ALL_TYPES))
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 629, in run_until_complete
+    self._check_closed()
+  File "C:\Users\bjksk\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 520, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+2025-07-14 22:39:18,377 - Task was destroyed but it is pending!
+task: <Task pending name='Task-4' coro=<send_periodic_signals() running at E:\SmartKoinBot\SmartKoinBot.py:760> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-07-14 22:39:18,378 - Task was destroyed but it is pending!
+task: <Task pending name='Task-5' coro=<monitor_active_signals() running at E:\SmartKoinBot\SmartKoinBot.py:874> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2025-07-14 22:39:18,475 - binance requires to release all resources with an explicit call to the .close() coroutine. If you are using the exchange instance with async coroutines, add `await exchange.close()` to your code into a place when you're done with the exchange and don't need the exchange instance anymore (at the end of your async coroutine).
+2025-07-14 22:39:18,476 - Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x0000025D4933B2D0>
